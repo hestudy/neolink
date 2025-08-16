@@ -17,14 +17,24 @@
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
     "clean": "rm -rf dist",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "migrate": "drizzle-kit migrate",
-    "generate": "drizzle-kit generate:pg",
-    "studio": "drizzle-kit studio"
+    "generate": "drizzle-kit generate",
+    "studio": "drizzle-kit studio",
+    "seed": "tsx seeds/index.ts seed",
+    "seed:clear": "tsx seeds/index.ts clear",
+    "backup": "tsx scripts/backup.ts create",
+    "backup:schema": "tsx scripts/backup.ts create-schema",
+    "backup:data": "tsx scripts/backup.ts create-data",
+    "backup:restore": "tsx scripts/backup.ts restore",
+    "backup:list": "tsx scripts/backup.ts list"
   },
   "dependencies": {
     "@neolink/shared": "workspace:*",
-    "drizzle-orm": "^0.29.0",
-    "pg": "^8.11.0"
+    "drizzle-orm": "^0.36.0",
+    "pg": "^8.11.0",
+    "pgvector": "^0.1.8"
   },
   "devDependencies": {
     "@neolink/config": "workspace:*",
@@ -32,6 +42,7 @@
     "@types/pg": "^8.10.0",
     "drizzle-kit": "^0.31.4",
     "eslint": "^8.55.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
   }
 }
