@@ -1,0 +1,30 @@
+{
+  "name": "@neolink/ai",
+  "version": "0.1.0",
+  "description": "AI processing modules for NeoLink",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@neolink/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@neolink/config": "workspace:*",
+    "@types/node": "^20.10.0",
+    "eslint": "^8.55.0",
+    "typescript": "^5.3.0"
+  }
+}
