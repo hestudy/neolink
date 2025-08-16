@@ -7,6 +7,7 @@ module.exports = {
   },
   extends: ['eslint:recommended'],
   parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   parserOptions: {
     ecmaVersion: 'latest',
     sourceType: 'module',
@@ -14,7 +15,9 @@ module.exports = {
   rules: {
     'prefer-const': 'error',
     'no-var': 'error',
-    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    'no-undef': 'off', // TypeScript handles this
   },
   ignorePatterns: ['dist', 'node_modules'],
 };

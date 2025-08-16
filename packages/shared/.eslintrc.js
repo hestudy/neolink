@@ -14,6 +14,7 @@ module.exports = {
   rules: {
     'prefer-const': 'error',
     'no-var': 'error',
+    'no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
   },
   ignorePatterns: ['dist', 'node_modules'],
 };

@@ -1,4 +1,13 @@
-// 共享类型定义
+// 导出所有 schemas 和类型
+export * from './schemas';
+
+// 导出 API 路由器
+export * from './api';
+
+// 导出验证工具
+export * from './validation';
+
+// 兼容性：保留原有接口定义
 export interface User {
   id: string;
   email: string;
@@ -54,6 +63,7 @@ export const API_ENDPOINTS = {
   HEALTH: '/health',
   USERS: '/users',
   LINKS: '/links',
+  API_V1: '/api/v1',
 } as const;
 
 export const HTTP_STATUS = {
