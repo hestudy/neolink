@@ -236,7 +236,7 @@ examplesRoute.post('/validation-demo', async (c) => {
       message: '验证通过',
       data: result.data,
     });
-  } catch (error) {
+  } catch {
     return c.json(
       {
         success: false,

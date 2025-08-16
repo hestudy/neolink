@@ -34,8 +34,7 @@ export interface ValidationOptions {
  */
 export function safeValidate<T>(
   schema: ZodSchema<T>,
-  data: unknown,
-  _options: ValidationOptions = {}
+  data: unknown
 ): ValidationResult<T> {
   try {
     const result = schema.safeParse(data);
