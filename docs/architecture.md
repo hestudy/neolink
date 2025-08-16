@@ -179,19 +179,19 @@ interface ProcessingJob {
 }
 
 enum JobType {
-  SCREENSHOT = "screenshot",
-  CONTENT_EXTRACTION = "content_extraction",
-  AI_SUMMARY = "ai_summary",
-  AI_TAGS = "ai_tags",
-  VECTOR_EMBEDDING = "vector_embedding",
+  SCREENSHOT = 'screenshot',
+  CONTENT_EXTRACTION = 'content_extraction',
+  AI_SUMMARY = 'ai_summary',
+  AI_TAGS = 'ai_tags',
+  VECTOR_EMBEDDING = 'vector_embedding',
 }
 
 enum JobStatus {
-  PENDING = "pending",
-  PROCESSING = "processing",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  CANCELLED = "cancelled",
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
 }
 ```
 
@@ -228,9 +228,9 @@ interface User {
 }
 
 interface UserPreferences {
-  theme: "light" | "dark" | "system";
+  theme: 'light' | 'dark' | 'system';
   language: string;
-  defaultView: "grid" | "list";
+  defaultView: 'grid' | 'list';
   itemsPerPage: number;
   enableNotifications: boolean;
 }
@@ -238,8 +238,8 @@ interface UserPreferences {
 interface AISettings {
   enableAISummary: boolean;
   enableAITags: boolean;
-  aiProvider: "openai" | "claude";
-  summaryLength: "short" | "medium" | "long";
+  aiProvider: 'openai' | 'claude';
+  summaryLength: 'short' | 'medium' | 'long';
   monthlyBudget: number;
   currentSpend: number;
 }
@@ -329,13 +329,13 @@ erDiagram
 
 ```typescript
 // packages/shared/src/api/bookmarks.ts
-import { z } from "zod";
-import { procedure, router } from "@orpc/server";
+import { z } from 'zod';
+import { procedure, router } from '@orpc/server';
 import {
   BookmarkSchema,
   CreateBookmarkSchema,
   UpdateBookmarkSchema,
-} from "../schemas";
+} from '../schemas';
 
 export const bookmarksRouter = router({
   // 创建书签
@@ -356,9 +356,9 @@ export const bookmarksRouter = router({
         tags: z.array(z.string()).optional(),
         isArchived: z.boolean().optional(),
         sortBy: z
-          .enum(["createdAt", "updatedAt", "title"])
-          .default("createdAt"),
-        sortOrder: z.enum(["asc", "desc"]).default("desc"),
+          .enum(['createdAt', 'updatedAt', 'title'])
+          .default('createdAt'),
+        sortOrder: z.enum(['asc', 'desc']).default('desc'),
       })
     )
     .output(
@@ -424,13 +424,13 @@ export type AppRouter = typeof appRouter;
 
 ```typescript
 // apps/web/src/lib/api-client.ts
-import { createORPCClient } from "@orpc/client";
-import type { AppRouter } from "@neolink/shared/api";
+import { createORPCClient } from '@orpc/client';
+import type { AppRouter } from '@neolink/shared/api';
 
 export const api = createORPCClient<AppRouter>({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001",
+  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001',
   headers: {
-    "Content-Type": "application/json",
+    'Content-Type': 'application/json',
   },
 });
 
@@ -438,12 +438,12 @@ export const api = createORPCClient<AppRouter>({
 const bookmarks = await api.bookmarks.list({
   page: 1,
   limit: 20,
-  search: "react",
+  search: 'react',
 });
 
 const newBookmark = await api.bookmarks.create({
-  url: "https://example.com",
-  title: "Example Site",
+  url: 'https://example.com',
+  title: 'Example Site',
 });
 ```
 
@@ -644,42 +644,42 @@ export class OpenAIProvider implements AIProvider {
     options: SummaryOptions = {}
   ): Promise<SummaryResult> {
     // 1. 成本检查
-    await this.costTracker.checkBudget("summary");
+    await this.costTracker.checkBudget('summary');
 
     // 2. 缓存检查
-    const cacheKey = this.generateCacheKey("summary", content, options);
+    const cacheKey = this.generateCacheKey('summary', content, options);
     const cached = await this.cache.get(cacheKey);
     if (cached) return cached;
 
     // 3. API调用
     const response = await this.client.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: 'gpt-4o-mini',
       messages: [
         {
-          role: "system",
+          role: 'system',
           content: this.getSummarySystemPrompt(options),
         },
         {
-          role: "user",
+          role: 'user',
           content: this.preprocessContent(content, options.maxLength || 4000),
         },
       ],
       max_tokens:
-        options.summaryLength === "short"
+        options.summaryLength === 'short'
           ? 100
-          : options.summaryLength === "long"
-          ? 300
-          : 200,
+          : options.summaryLength === 'long'
+            ? 300
+            : 200,
       temperature: 0.3,
     });
 
     const summary = response.choices[0]?.message?.content?.trim();
     if (!summary) {
-      throw new AIError("Failed to generate summary");
+      throw new AIError('Failed to generate summary');
     }
 
     // 4. 成本记录和缓存
-    await this.costTracker.recordUsage("summary", {
+    await this.costTracker.recordUsage('summary', {
       inputTokens: response.usage?.prompt_tokens || 0,
       outputTokens: response.usage?.completion_tokens || 0,
       cost: this.calculateCost(response.usage),
@@ -709,14 +709,14 @@ export class AIService {
   constructor(config: AIConfig) {
     this.config = config;
     this.providers = new Map();
-    this.fallbackChain = ["openai", "claude"];
+    this.fallbackChain = ['openai', 'claude'];
 
     // 初始化提供商
     if (config.openai?.enabled) {
-      this.providers.set("openai", new OpenAIProvider(config.openai));
+      this.providers.set('openai', new OpenAIProvider(config.openai));
     }
     if (config.claude?.enabled) {
-      this.providers.set("claude", new ClaudeProvider(config.claude));
+      this.providers.set('claude', new ClaudeProvider(config.claude));
     }
   }
 
@@ -725,9 +725,9 @@ export class AIService {
     options: SummaryOptions = {}
   ): Promise<SummaryResult> {
     const provider =
-      options.provider || this.config.defaultProvider || "openai";
+      options.provider || this.config.defaultProvider || 'openai';
     return this.executeWithFallback(
-      "generateSummary",
+      'generateSummary',
       provider,
       content,
       options
@@ -762,7 +762,7 @@ export class AIService {
       }
     }
 
-    throw new AIError("All AI providers failed");
+    throw new AIError('All AI providers failed');
   }
 }
 ```
@@ -794,7 +794,7 @@ export class ContentExtractionService {
 
       // 导航到页面
       await page.goto(url, {
-        waitUntil: "networkidle2",
+        waitUntil: 'networkidle2',
         timeout: 30000,
       });
 
@@ -804,14 +804,14 @@ export class ContentExtractionService {
         description:
           document
             .querySelector('meta[name="description"]')
-            ?.getAttribute("content") || "",
+            ?.getAttribute('content') || '',
         favicon:
-          document.querySelector('link[rel="icon"]')?.getAttribute("href") ||
-          "",
+          document.querySelector('link[rel="icon"]')?.getAttribute('href') ||
+          '',
         author:
           document
             .querySelector('meta[name="author"]')
-            ?.getAttribute("content") || "",
+            ?.getAttribute('content') || '',
       }));
 
       // 获取页面HTML和截图
@@ -842,10 +842,10 @@ export class ContentExtractionService {
       this.browser = await puppeteer.launch({
         headless: true,
         args: [
-          "--no-sandbox",
-          "--disable-setuid-sandbox",
-          "--disable-dev-shm-usage",
-          "--disable-gpu",
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
         ],
       });
     }
@@ -940,7 +940,7 @@ CMD ["node", "apps/api/dist/index.js"]
 
 ```yaml
 # docker-compose.yml
-version: "3.8"
+version: '3.8'
 
 services:
   # 反向代理和SSL终止
@@ -949,9 +949,9 @@ services:
     container_name: neolink-traefik
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "8080:8080"
+      - '80:80'
+      - '443:443'
+      - '8080:8080'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - ./traefik:/etc/traefik
@@ -983,9 +983,9 @@ services:
       - ./data/screenshots:/app/screenshots
       - ./data/backups:/app/backups
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.app.rule=Host(`${DOMAIN}`)"
-      - "traefik.http.routers.app.tls.certresolver=letsencrypt"
+      - 'traefik.enable=true'
+      - 'traefik.http.routers.app.rule=Host(`${DOMAIN}`)'
+      - 'traefik.http.routers.app.tls.certresolver=letsencrypt'
 
   # PostgreSQL数据库
   db:
@@ -1000,7 +1000,7 @@ services:
       - ./data/postgres:/var/lib/postgresql/data
       - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER} -d ${DB_NAME}']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1014,7 +1014,7 @@ services:
     volumes:
       - ./data/redis:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ['CMD', 'redis-cli', 'ping']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -1024,7 +1024,7 @@ services:
     build: .
     container_name: neolink-worker
     restart: unless-stopped
-    command: ["node", "apps/api/dist/worker.js"]
+    command: ['node', 'apps/api/dist/worker.js']
     depends_on:
       - db
       - redis
@@ -1067,29 +1067,29 @@ export class AuthService {
   async generateTokens(userId: string): Promise<TokenPair> {
     const payload = {
       userId,
-      type: "access",
+      type: 'access',
       iat: Math.floor(Date.now() / 1000),
     };
 
     // 生成访问令牌（15分钟有效期）
     const accessToken = jwt.sign(payload, this.jwtSecret, {
-      expiresIn: "15m",
-      issuer: "neolink",
-      audience: "neolink-api",
+      expiresIn: '15m',
+      issuer: 'neolink',
+      audience: 'neolink-api',
     });
 
     // 生成刷新令牌（7天有效期）
     const refreshPayload = {
       userId,
-      type: "refresh",
+      type: 'refresh',
       tokenId: crypto.randomUUID(),
       iat: Math.floor(Date.now() / 1000),
     };
 
     const refreshToken = jwt.sign(refreshPayload, this.refreshSecret, {
-      expiresIn: "7d",
-      issuer: "neolink",
-      audience: "neolink-api",
+      expiresIn: '7d',
+      issuer: 'neolink',
+      audience: 'neolink-api',
     });
 
     // 存储刷新令牌到Redis（支持撤销）
@@ -1103,7 +1103,7 @@ export class AuthService {
       accessToken,
       refreshToken,
       expiresIn: 15 * 60,
-      tokenType: "Bearer",
+      tokenType: 'Bearer',
     };
   }
 }
@@ -1119,7 +1119,7 @@ export class AuthService {
 # traefik/traefik.yml
 entryPoints:
   web:
-    address: ":80"
+    address: ':80'
     http:
       redirections:
         entrypoint:
@@ -1127,7 +1127,7 @@ entryPoints:
           scheme: https
           permanent: true
   websecure:
-    address: ":443"
+    address: ':443'
     http:
       tls:
         options: default
@@ -1135,11 +1135,11 @@ entryPoints:
 tls:
   options:
     default:
-      minVersion: "VersionTLS13"
+      minVersion: 'VersionTLS13'
       cipherSuites:
-        - "TLS_AES_256_GCM_SHA384"
-        - "TLS_CHACHA20_POLY1305_SHA256"
-        - "TLS_AES_128_GCM_SHA256"
+        - 'TLS_AES_256_GCM_SHA384'
+        - 'TLS_CHACHA20_POLY1305_SHA256'
+        - 'TLS_AES_128_GCM_SHA256'
 ```
 
 #### API 安全
@@ -1157,7 +1157,7 @@ export class RateLimitMiddleware {
     this.limits = limits;
   }
 
-  createRateLimit(tier: "default" | "authenticated" | "premium") {
+  createRateLimit(tier: 'default' | 'authenticated' | 'premium') {
     return procedure.use(async ({ next, context }) => {
       const config = this.limits[tier];
       const identifier = this.getIdentifier(context, tier);
@@ -1174,7 +1174,7 @@ export class RateLimitMiddleware {
       const currentRequests = await this.redis.zcard(key);
 
       if (currentRequests >= config.maxRequests) {
-        throw new TooManyRequestsError("Rate limit exceeded");
+        throw new TooManyRequestsError('Rate limit exceeded');
       }
 
       // 记录当前请求
@@ -1215,8 +1215,8 @@ export class PrivacyService {
         createdAt: bookmark.createdAt,
       })),
       exportedAt: new Date(),
-      format: "JSON",
-      version: "1.0",
+      format: 'JSON',
+      version: '1.0',
     };
   }
 
@@ -1241,7 +1241,7 @@ export class PrivacyService {
       await this.bookmarkRepository.hardDelete(bookmark.id);
 
       deletionReport.deletedItems.push({
-        type: "bookmark",
+        type: 'bookmark',
         id: bookmark.id,
         deletedAt: new Date(),
       });

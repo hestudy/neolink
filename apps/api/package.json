@@ -12,10 +12,10 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@neolink/shared": "workspace:*",
-    "@neolink/database": "workspace:*",
     "@neolink/ai": "workspace:*",
-    "hono": "^3.11.0"
+    "@neolink/database": "workspace:*",
+    "@neolink/shared": "workspace:*",
+    "hono": "^4.9.2"
   },
   "devDependencies": {
     "@neolink/config": "workspace:*",
