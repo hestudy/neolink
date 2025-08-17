@@ -116,6 +116,30 @@ export function validate<T>(schema: z.ZodSchema<T>, data: unknown): T {
 }
 
 /**
+ * UUID 参数验证中间件
+ */
+export function validateUUIDParam(paramName: string = 'id') {
+  return async (c: Context, next: Next) => {
+    const paramValue = c.req.param(paramName);
+
+    if (!paramValue) {
+      throw new HTTPException(400, {
+        message: `${paramName} 参数不能为空`,
+      });
+    }
+
+    const validation = UUIDSchema.safeParse(paramValue);
+    if (!validation.success) {
+      throw new HTTPException(400, {
+        message: `无效的 ${paramName} 格式`,
+      });
+    }
+
+    await next();
+  };
+}
+
+/**
  * 常用的验证 schema
  */
 export const UUIDSchema = z.string().uuid('Invalid UUID format');

@@ -3,6 +3,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import { healthRoute } from './health';
 import { examplesRoute } from './examples';
 import { authRoute } from './auth';
+import { bookmarksRoute } from './bookmarks';
 import { orpcHandler } from '../adapters/orpc';
 
 /**
@@ -18,6 +19,9 @@ export function setupRoutes(app: Hono | OpenAPIHono) {
   // 认证路由
   apiV1.route('/auth', authRoute);
 
+  // 书签路由
+  apiV1.route('/bookmarks', bookmarksRoute);
+
   // oRPC 路由 - 类型安全的API端点
   apiV1.route('/rpc', orpcHandler);
 
@@ -25,7 +29,6 @@ export function setupRoutes(app: Hono | OpenAPIHono) {
   apiV1.route('/examples', examplesRoute);
 
   // 将来在这里添加其他路由
-  // apiV1.route('/bookmarks', bookmarksRoute);
   // apiV1.route('/search', searchRoute);
   // apiV1.route('/ai', aiRoute);
   // apiV1.route('/tags', tagsRoute);

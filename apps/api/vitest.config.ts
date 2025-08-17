@@ -10,15 +10,24 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@neolink/shared': path.resolve(
+      '@neolink/shared': path.resolve(__dirname, '../../packages/shared/src'),
+      '@neolink/shared/schemas': path.resolve(
         __dirname,
-        '../../packages/shared/src/index.ts'
+        '../../packages/shared/src/schemas'
       ),
       '@neolink/database': path.resolve(
         __dirname,
-        '../../packages/database/src/index.ts'
+        '../../packages/database/src'
       ),
-      '@neolink/ai': path.resolve(__dirname, '../../packages/ai/src/index.ts'),
+      '@neolink/database/connection': path.resolve(
+        __dirname,
+        '../../packages/database/src/connection.ts'
+      ),
+      '@neolink/database/schema': path.resolve(
+        __dirname,
+        '../../packages/database/src/schema.ts'
+      ),
+      '@neolink/ai': path.resolve(__dirname, '../../packages/ai/src'),
     },
   },
 });
