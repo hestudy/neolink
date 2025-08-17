@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import { healthRoute } from './health';
 import { examplesRoute } from './examples';
 import { authRoute } from './auth';
@@ -7,9 +8,9 @@ import { orpcHandler } from '../adapters/orpc';
 /**
  * 设置所有路由
  */
-export function setupRoutes(app: any) {
+export function setupRoutes(app: Hono | OpenAPIHono) {
   // 健康检查路由
-  app.route('/health', healthRoute);
+  (app as any).route('/health', healthRoute);
 
   // API版本路由组
   const apiV1 = new Hono();
@@ -32,7 +33,7 @@ export function setupRoutes(app: any) {
   // apiV1.route('/system', systemRoute);
 
   // 挂载API v1路由
-  app.route('/api/v1', apiV1);
+  (app as any).route('/api/v1', apiV1);
 
   console.log('✅ Routes configured with oRPC integration');
 }

@@ -1,5 +1,6 @@
-import { Context } from 'hono';
+import { Context, Hono } from 'hono';
 import { HTTPException } from 'hono/http-exception';
+import { OpenAPIHono } from '@hono/zod-openapi';
 
 /**
  * 自定义错误类
@@ -35,11 +36,34 @@ export class AuthorizationError extends Error {
   }
 }
 
+export class NotFoundError extends Error {
+  constructor(message: string = 'Resource not found') {
+    super(message);
+    this.name = 'NotFoundError';
+  }
+}
+
 /**
  * 错误处理中间件
  */
-export function setupErrorHandlers(app: any) {
-  app.onError((err: Error, c: Context) => {
+export function setupErrorHandlers(app: Hono | OpenAPIHono) {
+  // 404 处理器
+  (app as any).notFound((c: Context) => {
+    const requestId = c.get('requestId') || 'unknown';
+
+    return c.json(
+      {
+        success: false,
+        error: 'Not Found',
+        message: 'The requested resource was not found',
+        timestamp: new Date().toISOString(),
+        requestId,
+      },
+      404
+    );
+  });
+
+  (app as any).onError((err: Error, c: Context) => {
     const requestId = c.get('requestId') || 'unknown';
 
     console.error('Error:', {
@@ -119,12 +143,28 @@ export function setupErrorHandlers(app: any) {
       );
     }
 
+    if (err instanceof NotFoundError) {
+      return c.json(
+        {
+          success: false,
+          error: 'Not Found',
+          message: err.message,
+          timestamp: new Date().toISOString(),
+          requestId,
+        },
+        404
+      );
+    }
+
     // 默认服务器错误
     return c.json(
       {
         success: false,
         error: 'Internal Server Error',
-        message: 'An unexpected error occurred',
+        message:
+          process.env.NODE_ENV === 'production'
+            ? 'An unexpected error occurred'
+            : err.message,
         timestamp: new Date().toISOString(),
         requestId,
       },

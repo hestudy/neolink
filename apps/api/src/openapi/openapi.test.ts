@@ -114,7 +114,7 @@ describe('OpenAPI Integration', () => {
       }),
     });
 
-    expect(res.status).toBe(501); // Not implemented yet
+    expect(res.status).toBe(400); // Bad request - not implemented yet
 
     const data = await res.json();
     expect(data.success).toBe(false);

@@ -51,7 +51,7 @@ authRoute.post(
 );
 
 // 获取当前用户信息（需要认证）
-authRoute.openapi(getCurrentUserRoute, async (c): Promise<any> => {
+authRoute.openapi(getCurrentUserRoute, async (c) => {
   const user = c.get('user') as
     | { id: string; email: string; name?: string }
     | undefined;
@@ -69,18 +69,21 @@ authRoute.openapi(getCurrentUserRoute, async (c): Promise<any> => {
     );
   }
 
-  return c.json({
-    success: true,
-    data: {
-      user: {
-        id: user.id,
-        username: user.name || 'unknown',
-        email: user.email,
-        role: 'user',
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+  return c.json(
+    {
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          username: user.name || 'unknown',
+          email: user.email,
+          role: 'user',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
       },
+      requestId: c.get('requestId') || 'unknown',
     },
-    requestId: c.get('requestId') || 'unknown',
-  });
+    200
+  );
 });

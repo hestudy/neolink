@@ -4,15 +4,34 @@ import { verifyAccessToken } from '../utils/jwt';
 import type { UserContext } from '@neolink/shared';
 
 /**
+ * 认证中间件选项
+ */
+export interface AuthMiddlewareOptions {
+  optional?: boolean;
+  roles?: string[];
+  message?: string;
+  errorMessage?: string;
+}
+
+/**
  * 认证中间件
  */
-export function authMiddleware() {
+export function authMiddleware(options: AuthMiddlewareOptions = {}) {
   return async (c: Context, next: Next) => {
     const authorization = c.req.header('Authorization');
 
     if (!authorization || !authorization.startsWith('Bearer ')) {
+      if (options.optional) {
+        // 可选认证，继续处理请求
+        await next();
+        return;
+      }
+
       throw new HTTPException(401, {
-        message: 'Missing or invalid authorization header',
+        message:
+          options.errorMessage ||
+          options.message ||
+          'Missing or invalid authorization header',
       });
     }
 
@@ -33,11 +52,32 @@ export function authMiddleware() {
       // 设置用户信息到上下文
       c.set('user', user);
 
+      // 检查角色权限
+      if (options.roles && options.roles.length > 0) {
+        if (!options.roles.includes(user.role) && user.role !== 'admin') {
+          throw new HTTPException(403, {
+            message: `Access denied. Required roles: ${options.roles.join(', ')}`,
+          });
+        }
+      }
+
       await next();
     } catch (error) {
+      if (error instanceof HTTPException) {
+        throw error;
+      }
+
+      if (options.optional) {
+        // 可选认证，忽略认证错误
+        console.warn('Optional auth failed:', error);
+        await next();
+        return;
+      }
+
       console.error('Token verification failed:', error);
       throw new HTTPException(401, {
-        message: 'Invalid or expired token',
+        message:
+          options.errorMessage || options.message || 'Invalid or expired token',
       });
     }
   };
@@ -46,45 +86,18 @@ export function authMiddleware() {
 /**
  * 必需认证中间件（别名）
  */
-export const requireAuth = authMiddleware;
+export const requireAuth = authMiddleware();
 
 /**
  * 可选认证中间件（不强制要求认证）
  */
-export function optionalAuth() {
-  return async (c: Context, next: Next) => {
-    const authorization = c.req.header('Authorization');
-
-    if (authorization && authorization.startsWith('Bearer ')) {
-      const token = authorization.substring(7);
-
-      try {
-        const payload = verifyAccessToken(token);
-
-        const user: UserContext = {
-          id: payload.userId || 'unknown',
-          username: payload.username || 'unknown',
-          email: payload.email || 'unknown@example.com',
-          role: payload.role || 'user',
-          isActive: true,
-        };
-
-        c.set('user', user);
-      } catch (error) {
-        // 忽略认证错误，继续处理请求
-        console.warn('Optional auth failed:', error);
-      }
-    }
-
-    await next();
-  };
-}
+export const optionalAuth = authMiddleware({ optional: true });
 
 /**
  * 获取当前用户
  */
-export function getCurrentUser(c: Context): UserContext | undefined {
-  return c.get('user') as UserContext | undefined;
+export function getCurrentUser(c: Context): UserContext | null {
+  return (c.get('user') as UserContext | null) || null;
 }
 
 /**
@@ -126,10 +139,12 @@ export function hasPermission(
 }
 
 /**
- * 要求管理员权限
+ * 要求管理员权限（包含认证）
  */
-export function requireAdmin() {
-  return async (c: Context, next: Next) => {
+export const requireAdmin = async (c: Context, next: Next) => {
+  // 先进行认证
+  await authMiddleware()(c, async () => {
+    // 认证成功后检查权限
     const user = getCurrentUser(c);
 
     if (!user) {
@@ -145,14 +160,16 @@ export function requireAdmin() {
     }
 
     await next();
-  };
-}
+  });
+};
 
 /**
- * 要求版主权限
+ * 要求版主权限（包含认证）
  */
-export function requireModerator() {
-  return async (c: Context, next: Next) => {
+export const requireModerator = async (c: Context, next: Next) => {
+  // 先进行认证
+  await authMiddleware()(c, async () => {
+    // 认证成功后检查权限
     const user = getCurrentUser(c);
 
     if (!user) {
@@ -168,8 +185,8 @@ export function requireModerator() {
     }
 
     await next();
-  };
-}
+  });
+};
 
 /**
  * 角色检查中间件

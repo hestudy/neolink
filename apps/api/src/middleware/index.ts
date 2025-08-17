@@ -1,4 +1,5 @@
-// import { Hono } from 'hono';
+import { Context, Next, Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
 import { prettyJSON } from 'hono/pretty-json';
@@ -12,12 +13,12 @@ import { rateLimiters } from './rateLimit';
 /**
  * 设置生产级中间件栈
  */
-export function setupMiddleware(app: any) {
+export function setupMiddleware(app: Hono | OpenAPIHono) {
   // 请求ID中间件 - 为每个请求生成唯一ID
-  app.use('*', requestId());
+  (app as any).use('*', requestId());
 
   // 安全头部中间件
-  app.use(
+  (app as any).use(
     '*',
     secureHeaders({
       contentSecurityPolicy: {
@@ -36,10 +37,10 @@ export function setupMiddleware(app: any) {
   );
 
   // 请求监控中间件（包含详细日志和性能监控）
-  app.use('*', requestMonitoring());
+  (app as any).use('*', requestMonitoring());
 
   // 请求日志中间件
-  app.use(
+  (app as any).use(
     '*',
     logger((message, ...rest) => {
       const timestamp = new Date().toISOString();
@@ -48,10 +49,10 @@ export function setupMiddleware(app: any) {
   );
 
   // 性能计时中间件
-  app.use('*', timing());
+  (app as any).use('*', timing());
 
   // 速率限制中间件
-  app.use('*', rateLimiters.default); // 默认速率限制
+  (app as any).use('*', rateLimiters.default); // 默认速率限制
 
   // CORS 配置
   const corsOrigins =
@@ -59,7 +60,7 @@ export function setupMiddleware(app: any) {
       ? [process.env.FRONTEND_URL || 'https://neolink.app']
       : ['http://localhost:3000', 'http://localhost:3001'];
 
-  app.use(
+  (app as any).use(
     '*',
     cors({
       origin: corsOrigins,
@@ -77,7 +78,7 @@ export function setupMiddleware(app: any) {
   );
 
   // CSRF 保护中间件 - 仅对需要保护的路由启用
-  app.use(
+  (app as any).use(
     '/api/v1/*',
     csrf({
       origin: corsOrigins,
@@ -85,18 +86,18 @@ export function setupMiddleware(app: any) {
   );
 
   // 排除认证路由的 CSRF 保护
-  app.use('/api/v1/auth/*', async (c: any, next: any) => {
+  (app as any).use('/api/v1/auth/*', async (_c: Context, next: Next) => {
     // 跳过 CSRF 检查，直接继续
     await next();
   });
 
   // JSON 格式化中间件（仅在开发环境）
   if (process.env.NODE_ENV !== 'production') {
-    app.use('*', prettyJSON());
+    (app as any).use('*', prettyJSON());
   }
 
   // 请求体大小限制中间件
-  app.use('*', async (c: any, next: any) => {
+  (app as any).use('*', async (c: Context, next: Next) => {
     const contentLength = c.req.header('content-length');
     if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
       // 10MB

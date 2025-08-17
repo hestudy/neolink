@@ -4,8 +4,8 @@ declare module 'hono' {
   interface ContextVariableMap {
     user: User;
     requestId: string;
-    validatedBody: any;
-    validatedQuery: any;
-    validatedParams: any;
+    validatedBody: unknown;
+    validatedQuery: unknown;
+    validatedParams: unknown;
   }
 }

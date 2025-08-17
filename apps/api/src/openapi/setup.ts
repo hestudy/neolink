@@ -104,7 +104,7 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
         timestamp: new Date().toISOString(),
         requestId: c.get('requestId') || 'unknown',
       },
-      400 // Bad request - not implemented yet
+      400 // Bad request - not implemented
     );
   });
 

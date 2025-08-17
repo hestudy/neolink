@@ -224,7 +224,7 @@ export function extractTokenFromHeader(
 export class JWTError extends Error {
   constructor(
     message: string,
-    public _code:
+    public code:
       | 'INVALID_TOKEN'
       | 'TOKEN_EXPIRED'
       | 'TOKEN_NOT_ACTIVE'
