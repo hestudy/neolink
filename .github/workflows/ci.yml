@@ -128,7 +128,7 @@ jobs:
           # Run database migrations to create tables
           echo "Running database migrations..."
           cd packages/database
-          pnpm run migrate
+          DATABASE_URL=postgresql://postgres:postgres@localhost:5432/neolink_test pnpm run migrate
           cd ../..
 
       - name: Run tests
