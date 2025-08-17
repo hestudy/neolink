@@ -10,7 +10,7 @@ import {
   registerRoute,
   refreshTokenRoute,
   logoutRoute,
-  getCurrentUserRoute,
+  // getCurrentUserRoute, // implemented in routes/auth.ts
 } from './routes/auth';
 
 /**
@@ -99,9 +99,12 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     return c.json(
       {
         success: false,
+        error: 'Not Implemented',
         message: 'Login endpoint - to be implemented',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
       },
-      501 // Not implemented
+      400 // Bad request - not implemented yet
     );
   });
 
@@ -146,41 +149,7 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     );
   });
 
-  app.openapi(getCurrentUserRoute, async (c) => {
-    // TODO: 实现实际的获取用户信息逻辑
-    const user = c.get('user');
-
-    if (!user) {
-      return c.json(
-        {
-          success: false,
-          error: 'Unauthorized',
-          message: 'User not authenticated',
-          timestamp: new Date().toISOString(),
-          requestId: c.get('requestId') || 'unknown',
-        },
-        401
-      );
-    }
-
-    return c.json(
-      {
-        success: true,
-        data: {
-          user: {
-            id: user.id,
-            username: user.name || 'unknown',
-            email: user.email,
-            role: user.role || 'user',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-        requestId: c.get('requestId') || 'unknown',
-      },
-      200
-    );
-  });
+  // Note: /me route is implemented in routes/auth.ts
 
   console.log('✅ OpenAPI routes configured');
 }

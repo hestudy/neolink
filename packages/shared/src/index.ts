@@ -23,6 +23,8 @@ export interface UserContext {
   email: string;
   role: 'user' | 'moderator' | 'admin';
   isActive: boolean;
+  permissions?: string[];
+  lastLoginAt?: Date;
 }
 
 export interface Link {

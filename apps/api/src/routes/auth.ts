@@ -1,8 +1,9 @@
-import { Hono } from 'hono';
+import { OpenAPIHono } from '@hono/zod-openapi';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimiters } from '../middleware/rateLimit';
+import { getCurrentUserRoute } from '../openapi/routes/auth';
 
-export const authRoute = new Hono();
+export const authRoute = new OpenAPIHono();
 
 // 为认证相关操作应用严格的速率限制
 authRoute.use('/login', rateLimiters.auth);
@@ -50,17 +51,36 @@ authRoute.post(
 );
 
 // 获取当前用户信息（需要认证）
-authRoute.get(
-  '/me',
-  rateLimiters.authenticated,
-  authMiddleware(),
-  async (c) => {
-    const user = c.get('user') as
-      | { id: string; email: string; name?: string }
-      | undefined;
-    return c.json({
-      user,
-      success: true,
-    });
+authRoute.openapi(getCurrentUserRoute, async (c): Promise<any> => {
+  const user = c.get('user') as
+    | { id: string; email: string; name?: string }
+    | undefined;
+
+  if (!user) {
+    return c.json(
+      {
+        success: false,
+        error: 'Unauthorized',
+        message: 'User not found',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
+      },
+      401
+    );
   }
-);
+
+  return c.json({
+    success: true,
+    data: {
+      user: {
+        id: user.id,
+        username: user.name || 'unknown',
+        email: user.email,
+        role: 'user',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    },
+    requestId: c.get('requestId') || 'unknown',
+  });
+});

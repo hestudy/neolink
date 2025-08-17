@@ -92,22 +92,34 @@ export function getCurrentUser(c: Context): UserContext | undefined {
  */
 export function hasPermission(
   user: UserContext | undefined,
-  permission: string
+  resource: string,
+  action: string
 ): boolean {
   if (!user || !user.isActive) return false;
 
   // 管理员拥有所有权限
-  if (user.role === 'admin') return true;
+  if ((user.role as string) === 'admin') return true;
 
-  // 这里可以根据具体需求实现权限检查逻辑
-  // 目前简单地基于角色进行检查
-  switch (permission) {
-    case 'read':
-      return ['user', 'moderator', 'admin'].includes(user.role);
-    case 'write':
-      return ['moderator', 'admin'].includes(user.role);
-    case 'admin':
-      return user.role === 'admin';
+  // 基于资源和操作的权限检查
+  switch (resource) {
+    case 'bookmarks':
+      switch (action) {
+        case 'create':
+        case 'read':
+          return ['user', 'moderator', 'admin'].includes(user.role);
+        case 'update':
+        case 'delete':
+          return ['moderator', 'admin'].includes(user.role);
+        default:
+          return false;
+      }
+    case 'system':
+      switch (action) {
+        case 'manage':
+          return (user.role as string) === 'admin';
+        default:
+          return false;
+      }
     default:
       return false;
   }
