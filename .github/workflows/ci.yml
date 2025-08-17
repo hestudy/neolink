@@ -125,6 +125,12 @@ jobs:
           # Create pgvector extension (optional, tests should handle missing extension gracefully)
           PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d neolink_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || echo "pgvector extension not available, tests will handle this gracefully"
 
+          # Run database migrations to create tables
+          echo "Running database migrations..."
+          cd packages/database
+          pnpm run migrate
+          cd ../..
+
       - name: Run tests
         run: pnpm test
 
