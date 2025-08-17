@@ -7,7 +7,7 @@ import { orpcHandler } from '../adapters/orpc';
 /**
  * 设置所有路由
  */
-export function setupRoutes(app: Hono) {
+export function setupRoutes(app: any) {
   // 健康检查路由
   app.route('/health', healthRoute);
 

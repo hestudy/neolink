@@ -201,19 +201,22 @@ export function createOpenAPIApp() {
     swaggerUI({
       url: '/doc',
       title: 'NeoLink API Documentation',
-      theme: 'dark',
+      // theme: 'dark', // 不支持的选项
       layout: 'StandaloneLayout',
       deepLinking: true,
       displayRequestDuration: true,
       tryItOutEnabled: true,
-      requestInterceptor: (request) => {
-        // 自动添加认证头部
-        const token = localStorage.getItem('auth-token');
-        if (token) {
-          request.headers['Authorization'] = `Bearer ${token}`;
+      // requestInterceptor 需要是字符串形式的 JavaScript 代码
+      requestInterceptor: `
+        (request) => {
+          // 自动添加认证头部
+          const token = localStorage.getItem('auth-token');
+          if (token) {
+            request.headers['Authorization'] = 'Bearer ' + token;
+          }
+          return request;
         }
-        return request;
-      },
+      `,
     })
   );
 

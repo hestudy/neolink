@@ -55,7 +55,9 @@ authRoute.get(
   rateLimiters.authenticated,
   authMiddleware(),
   async (c) => {
-    const user = c.get('user');
+    const user = c.get('user') as
+      | { id: string; email: string; name?: string }
+      | undefined;
     return c.json({
       user,
       success: true,

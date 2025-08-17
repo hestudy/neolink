@@ -65,7 +65,6 @@ export function initializeRedis() {
   if (!redisClient) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
     redisClient = new Redis(redisUrl, {
-      retryDelayOnFailover: 100,
       maxRetriesPerRequest: 3,
       lazyConnect: true,
     });

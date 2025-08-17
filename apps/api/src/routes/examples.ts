@@ -28,7 +28,7 @@ examplesRoute.post(
   '/bookmarks',
   validateBody(CreateBookmarkSchema),
   async (c) => {
-    const validatedBody = getValidatedData(c, 'body');
+    const validatedBody = getValidatedData(c, 'validatedBody') as any;
 
     // 这里 validatedBody 已经是类型安全的 CreateBookmark 类型
     return c.json({
@@ -50,7 +50,7 @@ examplesRoute.get(
   '/bookmarks',
   validateQuery(ListBookmarksSchema),
   async (c) => {
-    const validatedQuery = getValidatedData(c, 'query');
+    const validatedQuery = getValidatedData(c, 'validatedQuery') as any;
 
     // validatedQuery 包含验证和转换后的查询参数
     return c.json({
@@ -79,7 +79,7 @@ examplesRoute.get(
   '/bookmarks/:id',
   validateParams(BookmarkParamsSchema),
   async (c) => {
-    const validatedParams = getValidatedData(c, 'params');
+    const validatedParams = getValidatedData(c, 'validatedParams') as any;
 
     // validatedParams.id 已经验证为有效的 UUID
     return c.json({
@@ -103,8 +103,8 @@ examplesRoute.put(
   validateParams(BookmarkParamsSchema),
   validateBody(UpdateBookmarkSchema),
   async (c) => {
-    const validatedParams = getValidatedData(c, 'params');
-    const validatedBody = getValidatedData(c, 'body');
+    const validatedParams = getValidatedData(c, 'validatedParams') as any;
+    const validatedBody = getValidatedData(c, 'validatedBody') as any;
 
     return c.json({
       success: true,
@@ -123,7 +123,7 @@ const BatchOperationSchema = z
   .object({
     action: z.enum(['archive', 'unarchive', 'delete', 'move']),
     bookmarkIds: z
-      .array(UUIDSchema)
+      .array(z.string().uuid())
       .min(1, '至少选择一个书签')
       .max(100, '一次最多操作100个书签'),
     targetFolderId: z.string().uuid().optional(),
@@ -146,7 +146,7 @@ examplesRoute.post(
   '/bookmarks/batch',
   validateBody(BatchOperationSchema),
   async (c) => {
-    const validatedBody = getValidatedData(c, 'body');
+    const validatedBody = getValidatedData(c, 'validatedBody') as any;
 
     return c.json({
       success: true,
@@ -183,7 +183,7 @@ const ConditionalSchema = z
   );
 
 examplesRoute.post('/items', validateBody(ConditionalSchema), async (c) => {
-  const validatedBody = getValidatedData(c, 'body');
+  const validatedBody = getValidatedData(c, 'validatedBody') as any;
 
   return c.json({
     success: true,
@@ -221,7 +221,7 @@ examplesRoute.post('/validation-demo', async (c) => {
           success: false,
           error: 'Validation Error',
           message: '输入数据验证失败',
-          details: result.error.errors.map((err) => ({
+          details: result.error.issues.map((err: any) => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code,

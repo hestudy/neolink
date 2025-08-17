@@ -47,7 +47,7 @@ export function generateAccessToken(user: UserContext): string {
     expiresIn: config.accessTokenExpiry,
     issuer: config.issuer,
     audience: config.audience,
-  });
+  } as jwt.SignOptions);
 }
 
 /**
@@ -68,7 +68,7 @@ export function generateRefreshToken(user: UserContext): string {
     expiresIn: config.refreshTokenExpiry,
     issuer: config.issuer,
     audience: config.audience,
-  });
+  } as jwt.SignOptions);
 }
 
 /**
