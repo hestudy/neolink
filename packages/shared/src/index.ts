@@ -16,6 +16,15 @@ export interface User {
   updatedAt: Date;
 }
 
+// 用户上下文类型（用于认证）
+export interface UserContext {
+  id: string;
+  username: string;
+  email: string;
+  role: 'user' | 'moderator' | 'admin';
+  isActive: boolean;
+}
+
 export interface Link {
   id: string;
   url: string;

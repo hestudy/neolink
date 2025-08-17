@@ -10,13 +10,13 @@ export function validateBody(schema: any) {
     try {
       const body = await c.req.json();
       const result = schema.safeParse(body);
-
+      
       if (!result.success) {
         throw new HTTPException(400, {
           message: 'Validation failed',
         });
       }
-
+      
       // 将验证后的数据设置到上下文
       c.set('validatedBody', result.data);
       await next();
@@ -24,7 +24,7 @@ export function validateBody(schema: any) {
       if (error instanceof HTTPException) {
         throw error;
       }
-
+      
       throw new HTTPException(400, {
         message: 'Invalid JSON body',
       });
@@ -39,13 +39,13 @@ export function validateQuery(schema: any) {
   return async (c: Context, next: Next) => {
     const query = c.req.query();
     const result = schema.safeParse(query);
-
+    
     if (!result.success) {
       throw new HTTPException(400, {
         message: 'Query validation failed',
       });
     }
-
+    
     c.set('validatedQuery', result.data);
     await next();
   };
@@ -58,13 +58,13 @@ export function validateParams(schema: any) {
   return async (c: Context, next: Next) => {
     const params = c.req.param();
     const result = schema.safeParse(params);
-
+    
     if (!result.success) {
       throw new HTTPException(400, {
         message: 'Path parameter validation failed',
       });
     }
-
+    
     c.set('validatedParams', result.data);
     await next();
   };
@@ -75,13 +75,13 @@ export function validateParams(schema: any) {
  */
 export function validate<T>(schema: any, data: unknown): T {
   const result = schema.safeParse(data);
-
+  
   if (!result.success) {
     throw new HTTPException(400, {
       message: 'Validation failed',
     });
   }
-
+  
   return result.data;
 }
 
@@ -90,9 +90,7 @@ export function validate<T>(schema: any, data: unknown): T {
  */
 export const UUIDSchema = z.string().uuid('Invalid UUID format');
 export const EmailSchema = z.string().email('Invalid email format');
-export const PasswordSchema = z
-  .string()
-  .min(8, 'Password must be at least 8 characters');
+export const PasswordSchema = z.string().min(8, 'Password must be at least 8 characters');
 
 /**
  * 分页参数验证

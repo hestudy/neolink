@@ -11,6 +11,9 @@ export function requestMonitoring() {
     // 设置请求 ID
     c.set('requestId', requestId);
     
+    // 设置响应头
+    c.header('X-Request-ID', requestId);
+    
     // 记录请求开始
     console.log('Request started:', {
       requestId,

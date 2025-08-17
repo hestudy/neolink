@@ -1,16 +1,7 @@
 import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { verifyAccessToken } from '../utils/jwt';
-
-/**
- * 用户类型定义
- */
-export interface User {
-  id: string;
-  email: string;
-  name?: string;
-  role?: string;
-}
+import type { UserContext } from '@neolink/shared';
 
 /**
  * 认证中间件
@@ -30,12 +21,13 @@ export function authMiddleware() {
     try {
       const payload = verifyAccessToken(token);
 
-      // TODO: 从数据库获取完整的用户信息
-      const user: User = {
+      // 构建用户上下文
+      const user: UserContext = {
         id: payload.userId || 'unknown',
+        username: payload.username || 'unknown',
         email: payload.email || 'unknown@example.com',
-        name: payload.username,
         role: payload.role || 'user',
+        isActive: true,
       };
 
       // 设置用户信息到上下文
@@ -52,9 +44,14 @@ export function authMiddleware() {
 }
 
 /**
+ * 必需认证中间件（别名）
+ */
+export const requireAuth = authMiddleware;
+
+/**
  * 可选认证中间件（不强制要求认证）
  */
-export function optionalAuthMiddleware() {
+export function optionalAuth() {
   return async (c: Context, next: Next) => {
     const authorization = c.req.header('Authorization');
 
@@ -64,11 +61,12 @@ export function optionalAuthMiddleware() {
       try {
         const payload = verifyAccessToken(token);
 
-        const user: User = {
+        const user: UserContext = {
           id: payload.userId || 'unknown',
+          username: payload.username || 'unknown',
           email: payload.email || 'unknown@example.com',
-          name: payload.username,
           role: payload.role || 'user',
+          isActive: true,
         };
 
         c.set('user', user);
@@ -83,11 +81,90 @@ export function optionalAuthMiddleware() {
 }
 
 /**
+ * 获取当前用户
+ */
+export function getCurrentUser(c: Context): UserContext | undefined {
+  return c.get('user') as UserContext | undefined;
+}
+
+/**
+ * 检查权限
+ */
+export function hasPermission(
+  user: UserContext | undefined,
+  permission: string
+): boolean {
+  if (!user || !user.isActive) return false;
+
+  // 管理员拥有所有权限
+  if (user.role === 'admin') return true;
+
+  // 这里可以根据具体需求实现权限检查逻辑
+  // 目前简单地基于角色进行检查
+  switch (permission) {
+    case 'read':
+      return ['user', 'moderator', 'admin'].includes(user.role);
+    case 'write':
+      return ['moderator', 'admin'].includes(user.role);
+    case 'admin':
+      return user.role === 'admin';
+    default:
+      return false;
+  }
+}
+
+/**
+ * 要求管理员权限
+ */
+export function requireAdmin() {
+  return async (c: Context, next: Next) => {
+    const user = getCurrentUser(c);
+
+    if (!user) {
+      throw new HTTPException(401, {
+        message: 'Authentication required',
+      });
+    }
+
+    if (user.role !== 'admin') {
+      throw new HTTPException(403, {
+        message: 'Admin access required',
+      });
+    }
+
+    await next();
+  };
+}
+
+/**
+ * 要求版主权限
+ */
+export function requireModerator() {
+  return async (c: Context, next: Next) => {
+    const user = getCurrentUser(c);
+
+    if (!user) {
+      throw new HTTPException(401, {
+        message: 'Authentication required',
+      });
+    }
+
+    if (!['moderator', 'admin'].includes(user.role)) {
+      throw new HTTPException(403, {
+        message: 'Moderator access required',
+      });
+    }
+
+    await next();
+  };
+}
+
+/**
  * 角色检查中间件
  */
 export function requireRole(requiredRole: string) {
   return async (c: Context, next: Next) => {
-    const user = c.get('user') as User | undefined;
+    const user = getCurrentUser(c);
 
     if (!user) {
       throw new HTTPException(401, {

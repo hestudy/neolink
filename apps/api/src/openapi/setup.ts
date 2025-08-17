@@ -99,12 +99,9 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     return c.json(
       {
         success: false,
-        error: 'Not Implemented',
         message: 'Login endpoint - to be implemented',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId') || 'unknown',
       },
-      429 // 使用 429 状态码，因为这是 OpenAPI 规范中定义的状态码之一
+      501 // Not implemented
     );
   });
 
