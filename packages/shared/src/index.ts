@@ -16,6 +16,17 @@ export interface User {
   updatedAt: Date;
 }
 
+// 用户上下文类型（用于认证）
+export interface UserContext {
+  id: string;
+  username: string;
+  email: string;
+  role: 'user' | 'moderator' | 'admin';
+  isActive: boolean;
+  permissions?: string[];
+  lastLoginAt?: Date;
+}
+
 export interface Link {
   id: string;
   url: string;
@@ -27,7 +38,7 @@ export interface Link {
 }
 
 // API 响应类型
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

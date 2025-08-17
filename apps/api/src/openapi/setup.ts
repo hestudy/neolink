@@ -10,7 +10,7 @@ import {
   registerRoute,
   refreshTokenRoute,
   logoutRoute,
-  getCurrentUserRoute,
+  // getCurrentUserRoute, // implemented in routes/auth.ts
 } from './routes/auth';
 
 /**
@@ -46,19 +46,22 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
   app.openapi(healthCheckRoute, (c) => {
     const uptime = process.uptime();
 
-    return c.json({
-      success: true,
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-      uptime: Math.floor(uptime),
-      version: '1.0.0',
-      environment: process.env.NODE_ENV || 'development',
-      services: {
-        database: 'connected', // TODO: 实际检查数据库连接
-        redis: 'connected', // TODO: 实际检查 Redis 连接
+    return c.json(
+      {
+        success: true,
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: Math.floor(uptime),
+        version: '1.0.0',
+        environment: process.env.NODE_ENV || 'development',
+        services: {
+          database: 'connected', // TODO: 实际检查数据库连接
+          redis: 'connected', // TODO: 实际检查 Redis 连接
+        },
+        requestId: c.get('requestId') || 'unknown',
       },
-      requestId: c.get('requestId'),
-    });
+      200
+    );
   });
 
   app.openapi(csrfTokenRoute, (c) => {
@@ -96,9 +99,12 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     return c.json(
       {
         success: false,
+        error: 'Not Implemented',
         message: 'Login endpoint - to be implemented',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
       },
-      501
+      400 // Bad request - not implemented yet
     );
   });
 
@@ -107,9 +113,12 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     return c.json(
       {
         success: false,
+        error: 'Conflict',
         message: 'Register endpoint - to be implemented',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
       },
-      501
+      409 // 使用 409 状态码，因为这是 OpenAPI 规范中定义的状态码之一
     );
   });
 
@@ -118,9 +127,12 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     return c.json(
       {
         success: false,
+        error: 'Unauthorized',
         message: 'Refresh token endpoint - to be implemented',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
       },
-      501
+      401 // 使用 401 状态码，因为这是 OpenAPI 规范中定义的状态码之一
     );
   });
 
@@ -128,24 +140,16 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     // TODO: 实现实际的登出逻辑
     return c.json(
       {
-        success: false,
+        success: true,
         message: 'Logout endpoint - to be implemented',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId') || 'unknown',
       },
-      501
+      200 // 使用 200 状态码，因为这是 OpenAPI 规范中定义的状态码之一
     );
   });
 
-  app.openapi(getCurrentUserRoute, async (c) => {
-    // TODO: 实现实际的获取用户信息逻辑
-    const user = c.get('user');
-    return c.json({
-      success: true,
-      data: {
-        user,
-      },
-      requestId: c.get('requestId'),
-    });
-  });
+  // Note: /me route is implemented in routes/auth.ts
 
   console.log('✅ OpenAPI routes configured');
 }

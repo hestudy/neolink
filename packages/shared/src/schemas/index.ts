@@ -62,7 +62,7 @@ export const PaginationSchema = z.object({
 
 // 排序相关 schemas
 export const SortOrderSchema = z.enum(['asc', 'desc'], {
-  errorMap: () => ({ message: '排序方向必须是 asc 或 desc' }),
+  message: '排序方向必须是 asc 或 desc',
 });
 
 // 文本内容验证
@@ -96,7 +96,11 @@ export const UserPreferencesSchema = z.object({
       browser: z.boolean().default(true),
       mobile: z.boolean().default(false),
     })
-    .default({}),
+    .default({
+      email: true,
+      browser: true,
+      mobile: false,
+    }),
 });
 
 export const UserAISettingsSchema = z.object({
@@ -120,8 +124,28 @@ export const UserSchema = z.object({
     .trim()
     .optional(),
   avatar: URLSchema.optional(),
-  preferences: UserPreferencesSchema.default({}),
-  aiSettings: UserAISettingsSchema.default({}),
+  preferences: UserPreferencesSchema.default({
+    theme: 'light',
+    language: 'zh-CN',
+    timezone: 'Asia/Shanghai',
+    itemsPerPage: 20,
+    autoSave: true,
+    notifications: {
+      email: true,
+      browser: true,
+      mobile: false,
+    },
+  }),
+  aiSettings: UserAISettingsSchema.default({
+    enableAI: true,
+    aiProvider: 'openai',
+    model: 'gpt-4',
+    temperature: 0.7,
+    maxTokens: 1000,
+    autoSummarize: true,
+    autoTag: true,
+    autoTranslate: false,
+  }),
   isActive: z.boolean().default(true),
   isVerified: z.boolean().default(false),
   role: z.enum(['user', 'admin', 'moderator']).default('user'),
@@ -493,7 +517,7 @@ export const UserContextSchema = z.object({
 export const PermissionSchema = z.object({
   resource: z.string(),
   action: z.enum(['create', 'read', 'update', 'delete', 'manage']),
-  conditions: z.record(z.any()).optional(),
+  conditions: z.record(z.string(), z.unknown()).optional(),
 });
 
 // 认证相关类型导出

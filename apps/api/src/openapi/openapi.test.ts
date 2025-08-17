@@ -140,10 +140,12 @@ describe('OpenAPI Integration', () => {
 
     // 检查标签
     expect(doc.tags).toBeInstanceOf(Array);
-    expect(doc.tags.some((tag: any) => tag.name === 'Authentication')).toBe(
-      true
-    );
-    expect(doc.tags.some((tag: any) => tag.name === 'System')).toBe(true);
+    expect(
+      doc.tags.some((tag: { name: string }) => tag.name === 'Authentication')
+    ).toBe(true);
+    expect(
+      doc.tags.some((tag: { name: string }) => tag.name === 'System')
+    ).toBe(true);
 
     // 检查路径
     expect(doc.paths['/']).toBeDefined();

@@ -38,7 +38,9 @@ export function createORPCHandler(): Hono {
 
     // 创建上下文
     const context: ORPCContext = {
-      user: c.get('user'),
+      user: c.get('user') as
+        | { id: string; email: string; name?: string }
+        | undefined,
       requestId: c.get('requestId') || 'unknown',
       userAgent: c.req.header('user-agent'),
       ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip'),
