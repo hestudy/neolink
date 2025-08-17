@@ -122,8 +122,19 @@ jobs:
             sleep 2
           done
 
-          # Create pgvector extension (optional, tests should handle missing extension gracefully)
-          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d neolink_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || echo "pgvector extension not available, tests will handle this gracefully"
+          # Install pgvector extension if available
+          echo "Attempting to install pgvector extension..."
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d neolink_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || {
+            echo "pgvector extension not available, creating modified migration without vector support"
+            # Create a temporary migration without vector types for CI
+            cd packages/database
+            cp migrations/0000_friendly_dust.sql migrations/0000_friendly_dust.sql.backup
+            # Remove vector-related lines from migration
+            sed -e 's/"embedding" vector(1536),/"embedding" text,/' \
+                -e '/idx_bookmarks_embedding.*ivfflat/d' \
+                migrations/0000_friendly_dust.sql.backup > migrations/0000_friendly_dust.sql
+            cd ../..
+          }
 
           # Run database migrations to create tables
           echo "Running database migrations..."
