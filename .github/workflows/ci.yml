@@ -114,6 +114,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Setup database
+        run: |
+          # Wait for PostgreSQL to be ready
+          until pg_isready -h localhost -p 5432 -U postgres; do
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
+
+          # Create pgvector extension (optional, tests should handle missing extension gracefully)
+          PGPASSWORD=postgres psql -h localhost -p 5432 -U postgres -d neolink_test -c "CREATE EXTENSION IF NOT EXISTS vector;" || echo "pgvector extension not available, tests will handle this gracefully"
+
       - name: Run tests
         run: pnpm test
 
