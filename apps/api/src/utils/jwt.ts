@@ -79,8 +79,8 @@ export function generateTokenPair(user: UserContext) {
   const refreshToken = generateRefreshToken(user);
 
   // 解析访问令牌以获取过期时间
-  const decoded = jwt.decode(accessToken) as any;
-  const expiresIn = decoded.exp - Math.floor(Date.now() / 1000);
+  const decoded = jwt.decode(accessToken) as { exp: number } | null;
+  const expiresIn = decoded ? decoded.exp - Math.floor(Date.now() / 1000) : 0;
 
   return {
     accessToken,

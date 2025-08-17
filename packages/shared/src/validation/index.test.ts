@@ -81,7 +81,11 @@ describe('Validation Utils', () => {
   describe('createConditionalSchema', () => {
     it('should apply different schemas based on condition', () => {
       const conditionalSchema = createConditionalSchema(
-        (data: any) => data.type === 'user',
+        (data: unknown): data is { type: string } =>
+          typeof data === 'object' &&
+          data !== null &&
+          'type' in data &&
+          (data as { type: unknown }).type === 'user',
         z.object({ type: z.literal('user'), email: z.string().email() }),
         z.object({ type: z.literal('admin'), permissions: z.array(z.string()) })
       );

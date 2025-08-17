@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { Hono } from 'hono';
+import type { Redis } from 'ioredis';
 import { createRateLimit, closeRedis } from './rateLimit';
 import { setupErrorHandlers } from './errorHandler';
 
@@ -82,7 +83,7 @@ describe('Rate Limit Middleware', () => {
           zrem: vi.fn(),
           on: vi.fn(),
           quit: vi.fn(),
-        }) as any
+        }) as unknown as Redis
     );
 
     app.use('/test', createRateLimit('default'));
@@ -148,7 +149,7 @@ describe('Rate Limit Middleware', () => {
           zrem: vi.fn(),
           on: vi.fn(),
           quit: vi.fn(),
-        }) as any
+        }) as unknown as Redis
     );
 
     app.use('/test', createRateLimit('default'));
