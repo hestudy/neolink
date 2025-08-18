@@ -1,3 +1,7 @@
+# /test-design Task
+
+When this command is used, execute the following task:
+
 # test-design
 
 Create comprehensive test scenarios with appropriate test level recommendations for story implementation.

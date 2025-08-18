@@ -1,3 +1,7 @@
+# /trace-requirements Task
+
+When this command is used, execute the following task:
+
 # trace-requirements
 
 Map story requirements to test cases using Given-When-Then patterns for comprehensive traceability.

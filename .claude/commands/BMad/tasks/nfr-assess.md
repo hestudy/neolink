@@ -1,3 +1,7 @@
+# /nfr-assess Task
+
+When this command is used, execute the following task:
+
 # nfr-assess
 
 Quick NFR validation focused on the core four: security, performance, reliability, maintainability.

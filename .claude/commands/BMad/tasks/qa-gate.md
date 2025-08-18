@@ -1,3 +1,7 @@
+# /qa-gate Task
+
+When this command is used, execute the following task:
+
 # qa-gate
 
 Create or update a quality gate decision file for a story based on review findings.

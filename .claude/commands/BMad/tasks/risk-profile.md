@@ -1,3 +1,7 @@
+# /risk-profile Task
+
+When this command is used, execute the following task:
+
 # risk-profile
 
 Generate a comprehensive risk assessment matrix for a story implementation using probability × impact analysis.
