@@ -11,7 +11,7 @@ import { orpcHandler } from '../adapters/orpc';
  */
 export function setupRoutes(app: Hono | OpenAPIHono) {
   // 健康检查路由
-  (app as any).route('/health', healthRoute);
+  (app as Hono).route('/health', healthRoute);
 
   // API版本路由组
   const apiV1 = new Hono();
@@ -36,7 +36,7 @@ export function setupRoutes(app: Hono | OpenAPIHono) {
   // apiV1.route('/system', systemRoute);
 
   // 挂载API v1路由
-  (app as any).route('/api/v1', apiV1);
+  (app as Hono).route('/api/v1', apiV1);
 
   console.log('✅ Routes configured with oRPC integration');
 }

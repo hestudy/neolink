@@ -38,16 +38,16 @@ export function validateBody<T extends z.ZodSchema>(schema: T) {
 export function validateQuery<T extends z.ZodSchema>(schema: T) {
   return async (c: Context, next: Next) => {
     // 获取所有查询参数
-    const queryObj: Record<string, any> = {};
+    const queryObj: Record<string, string | boolean | number | string[]> = {};
     const url = new URL(c.req.url);
 
     for (const [key, value] of url.searchParams.entries()) {
       if (queryObj[key]) {
         // 如果已存在，转换为数组
         if (Array.isArray(queryObj[key])) {
-          queryObj[key].push(value);
+          (queryObj[key] as string[]).push(value);
         } else {
-          queryObj[key] = [queryObj[key], value];
+          queryObj[key] = [queryObj[key] as string, value];
         }
       } else {
         // 尝试类型转换

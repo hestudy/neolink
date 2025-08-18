@@ -48,7 +48,7 @@ export class NotFoundError extends Error {
  */
 export function setupErrorHandlers(app: Hono | OpenAPIHono) {
   // 404 处理器
-  (app as any).notFound((c: Context) => {
+  (app as Hono).notFound((c: Context) => {
     const requestId = c.get('requestId') || 'unknown';
 
     return c.json(
@@ -63,7 +63,7 @@ export function setupErrorHandlers(app: Hono | OpenAPIHono) {
     );
   });
 
-  (app as any).onError((err: Error, c: Context) => {
+  (app as Hono).onError((err: Error, c: Context) => {
     const requestId = c.get('requestId') || 'unknown';
 
     console.error('Error:', {

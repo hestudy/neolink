@@ -15,10 +15,10 @@ import { rateLimiters } from './rateLimit';
  */
 export function setupMiddleware(app: Hono | OpenAPIHono) {
   // 请求ID中间件 - 为每个请求生成唯一ID
-  (app as any).use('*', requestId());
+  (app as Hono).use('*', requestId());
 
   // 安全头部中间件
-  (app as any).use(
+  (app as Hono).use(
     '*',
     secureHeaders({
       contentSecurityPolicy: {
@@ -37,10 +37,10 @@ export function setupMiddleware(app: Hono | OpenAPIHono) {
   );
 
   // 请求监控中间件（包含详细日志和性能监控）
-  (app as any).use('*', requestMonitoring());
+  (app as Hono).use('*', requestMonitoring());
 
   // 请求日志中间件
-  (app as any).use(
+  (app as Hono).use(
     '*',
     logger((message, ...rest) => {
       const timestamp = new Date().toISOString();
@@ -49,10 +49,10 @@ export function setupMiddleware(app: Hono | OpenAPIHono) {
   );
 
   // 性能计时中间件
-  (app as any).use('*', timing());
+  (app as Hono).use('*', timing());
 
   // 速率限制中间件
-  (app as any).use('*', rateLimiters.default); // 默认速率限制
+  (app as Hono).use('*', rateLimiters.default); // 默认速率限制
 
   // CORS 配置
   const corsOrigins =
@@ -60,7 +60,7 @@ export function setupMiddleware(app: Hono | OpenAPIHono) {
       ? [process.env.FRONTEND_URL || 'https://neolink.app']
       : ['http://localhost:3000', 'http://localhost:3001'];
 
-  (app as any).use(
+  (app as Hono).use(
     '*',
     cors({
       origin: corsOrigins,
@@ -78,7 +78,7 @@ export function setupMiddleware(app: Hono | OpenAPIHono) {
   );
 
   // CSRF 保护中间件 - 仅对需要保护的路由启用
-  (app as any).use(
+  (app as Hono).use(
     '/api/v1/*',
     csrf({
       origin: corsOrigins,
@@ -86,18 +86,18 @@ export function setupMiddleware(app: Hono | OpenAPIHono) {
   );
 
   // 排除认证路由的 CSRF 保护
-  (app as any).use('/api/v1/auth/*', async (_c: Context, next: Next) => {
+  (app as Hono).use('/api/v1/auth/*', async (_c: Context, next: Next) => {
     // 跳过 CSRF 检查，直接继续
     await next();
   });
 
   // JSON 格式化中间件（仅在开发环境）
   if (process.env.NODE_ENV !== 'production') {
-    (app as any).use('*', prettyJSON());
+    (app as Hono).use('*', prettyJSON());
   }
 
   // 请求体大小限制中间件
-  (app as any).use('*', async (c: Context, next: Next) => {
+  (app as Hono).use('*', async (c: Context, next: Next) => {
     const contentLength = c.req.header('content-length');
     if (contentLength && parseInt(contentLength) > 10 * 1024 * 1024) {
       // 10MB
