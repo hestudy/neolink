@@ -8,25 +8,45 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "type-check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:watch": "vitest watch",
+    "test:coverage": "vitest run --coverage",
+    "type-check": "tsc --noEmit -p tsconfig.vitest.json",
     "clean": "rm -rf .next dist"
   },
   "dependencies": {
     "@neolink/shared": "workspace:*",
     "@neolink/ui": "workspace:*",
+    "@orpc/client": "^1.8.1",
+    "@orpc/react-query": "^1.8.1",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@types/dompurify": "^3.2.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "dompurify": "^3.2.6",
+    "lucide-react": "^0.540.0",
     "next": "^14.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "tailwind-merge": "^3.3.1",
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@neolink/config": "workspace:*",
+    "@testing-library/jest-dom": "^6.7.0",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^18.2.0",
     "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^5.0.0",
     "autoprefixer": "^10.4.0",
     "eslint": "^8.55.0",
     "eslint-config-next": "^14.0.0",
+    "jsdom": "^26.1.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.3.0",
-    "typescript": "^5.3.0"
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
   }
 }
