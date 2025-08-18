@@ -35,6 +35,24 @@ export const processingStatusEnum = [
   'failed',
 ] as const;
 
+// Job type enum type
+export const jobTypeEnum = [
+  'content_extraction',
+  'screenshot',
+  'ai_summary',
+  'ai_tags',
+  'vector_embedding',
+] as const;
+
+// Job status enum type
+export const jobStatusEnum = [
+  'pending',
+  'processing',
+  'completed',
+  'failed',
+  'cancelled',
+] as const;
+
 // Bookmarks table
 export const bookmarks = pgTable(
   'bookmarks',
@@ -117,6 +135,37 @@ export const bookmarkTags = pgTable(
   })
 );
 
+// Processing jobs table
+export const processingJobs = pgTable(
+  'processing_jobs',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    bookmarkId: uuid('bookmark_id')
+      .references(() => bookmarks.id, { onDelete: 'cascade' })
+      .notNull(),
+    type: text('type').notNull(), // JobType enum
+    status: text('status').default('pending').notNull(), // JobStatus enum
+    priority: integer('priority').default(0).notNull(),
+    attempts: integer('attempts').default(0).notNull(),
+    maxAttempts: integer('max_attempts').default(3).notNull(),
+    result: jsonb('result'),
+    error: text('error'),
+    startedAt: timestamp('started_at'),
+    completedAt: timestamp('completed_at'),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+  },
+  (table) => ({
+    bookmarkIdIdx: index('idx_processing_jobs_bookmark_id').on(
+      table.bookmarkId
+    ),
+    statusIdx: index('idx_processing_jobs_status').on(table.status),
+    typeIdx: index('idx_processing_jobs_type').on(table.type),
+    createdAtIdx: index('idx_processing_jobs_created_at').on(table.createdAt),
+    priorityIdx: index('idx_processing_jobs_priority').on(table.priority),
+  })
+);
+
 // Type definitions
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
@@ -126,6 +175,10 @@ export type Tag = typeof tags.$inferSelect;
 export type NewTag = typeof tags.$inferInsert;
 export type BookmarkTag = typeof bookmarkTags.$inferSelect;
 export type NewBookmarkTag = typeof bookmarkTags.$inferInsert;
+export type ProcessingJob = typeof processingJobs.$inferSelect;
+export type NewProcessingJob = typeof processingJobs.$inferInsert;
 
-// Processing status type
+// Enum types
 export type ProcessingStatus = (typeof processingStatusEnum)[number];
+export type JobType = (typeof jobTypeEnum)[number];
+export type JobStatus = (typeof jobStatusEnum)[number];

@@ -93,6 +93,9 @@ describe('Middleware Setup', () => {
   });
 
   it('should handle CSRF protection for protected routes', async () => {
+    // 在测试中启用CSRF保护
+    vi.stubEnv('ENABLE_CSRF_IN_TESTS', 'true');
+
     setupMiddleware(app);
 
     app.post('/api/v1/protected', (c) => c.json({ message: 'protected' }));
@@ -108,6 +111,9 @@ describe('Middleware Setup', () => {
     });
 
     expect(res.status).toBe(403); // CSRF protection should reject
+
+    // 清理环境变量
+    vi.unstubAllEnvs();
   });
 
   it('should allow access to CSRF token endpoint', async () => {

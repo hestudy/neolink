@@ -5,6 +5,7 @@ import { examplesRoute } from './examples';
 import { authRoute } from './auth';
 import { bookmarksRoute } from './bookmarks';
 import { orpcHandler } from '../adapters/orpc';
+import monitoringRoute from './monitoring';
 
 /**
  * 设置所有路由
@@ -27,6 +28,9 @@ export function setupRoutes(app: Hono | OpenAPIHono) {
 
   // 验证示例路由
   apiV1.route('/examples', examplesRoute);
+
+  // 监控路由
+  apiV1.route('/monitoring', monitoringRoute);
 
   // 将来在这里添加其他路由
   // apiV1.route('/search', searchRoute);

@@ -8,7 +8,8 @@ import {
 } from '@neolink/shared/schemas';
 import { z } from 'zod';
 import { ContentExtractionAdapter } from '@neolink/ai/services/ContentExtractionAdapter';
-import { getContentQueue } from './content-queue';
+import { queueManager, JobType } from './taskQueue';
+import { processingJobRepository } from '../repositories/ProcessingJobRepository';
 import { Redis } from 'ioredis';
 
 /**
@@ -177,17 +178,40 @@ export class BookmarkService {
       .returning();
 
     // 如果启用异步提取，添加到队列
-    if (this.config.enableAsyncExtraction && this.config.redis) {
+    if (this.config.enableAsyncExtraction) {
       try {
-        const contentQueue = getContentQueue(this.config.redis);
-        await contentQueue.addExtractionJob({
+        // 创建处理任务记录
+        await processingJobRepository.create({
           bookmarkId: newBookmark.id,
-          url: validatedData.url,
-          userId,
+          type: JobType.CONTENT_EXTRACTION,
+          status: 'pending',
           priority: 1,
+          attempts: 0,
+          maxAttempts: 3,
         });
+
+        // 添加到任务队列
+        await queueManager.addContentExtractionJob(
+          newBookmark.id,
+          validatedData.url,
+          userId,
+          {
+            priority: 1,
+            enableScreenshots: true,
+            enableFullContent: true,
+          }
+        );
+
+        console.log(
+          `📋 Content extraction job created for bookmark ${newBookmark.id}`
+        );
       } catch (error) {
         console.error('Failed to add content extraction job to queue:', error);
+        // 更新书签状态为失败
+        await db
+          .update(bookmarks)
+          .set({ processingStatus: 'failed' })
+          .where(eq(bookmarks.id, newBookmark.id));
       }
     }
 
