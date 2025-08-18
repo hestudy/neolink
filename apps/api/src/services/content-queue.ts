@@ -1,9 +1,21 @@
 import { Queue, Worker, Job } from 'bullmq';
 import { Redis } from 'ioredis';
-import {
-  EnhancedContentExtractionService,
-  WebContentExtraction,
-} from './content-extraction';
+import { ContentExtractionAdapter } from '@neolink/ai/services/ContentExtractionAdapter';
+
+/**
+ * 网页内容提取结果接口（向后兼容）
+ */
+export interface WebContentExtraction {
+  title?: string;
+  description?: string;
+  content?: string;
+  favicon?: string;
+  screenshot?: string;
+  domain?: string;
+  language?: string;
+  wordCount?: number;
+  readingTime?: number;
+}
 import { db } from '@neolink/database/connection';
 import { bookmarks } from '@neolink/database/schema';
 import { eq } from 'drizzle-orm';
@@ -34,26 +46,16 @@ export interface ContentExtractionResult {
 export class ContentExtractionQueue {
   private queue: Queue<ContentExtractionJobData>;
   private worker: Worker<ContentExtractionJobData, ContentExtractionResult>;
-  private contentExtractor: EnhancedContentExtractionService;
+  private contentExtractor: ContentExtractionAdapter;
 
   constructor(redis: Redis) {
     // 初始化内容提取服务
-    this.contentExtractor = new EnhancedContentExtractionService({
-      redis,
+    this.contentExtractor = new ContentExtractionAdapter({
       timeout: 30000,
-      maxContentSize: 50000,
-      blockedDomains: [
-        'localhost',
-        '127.0.0.1',
-        '0.0.0.0',
-        '::1',
-        '169.254.169.254', // AWS metadata
-        '10.0.0.0/8',
-        '172.16.0.0/12',
-        '192.168.0.0/16',
-      ],
       enableCache: true,
       cacheTtl: 7 * 24 * 3600, // 7天缓存
+      enableScreenshots: true, // 在后台任务中启用截图
+      enableFullContent: true,
     });
 
     // 初始化队列

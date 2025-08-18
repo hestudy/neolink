@@ -68,6 +68,21 @@ CMD ["pnpm", "--filter=@neolink/web", "start"]
 # 生产阶段 - API
 FROM node:20-alpine AS api-production
 
+# 安装 Chromium 和相关依赖
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    freetype-dev \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    curl
+
+# 设置 Puppeteer 使用系统 Chromium
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 RUN npm install -g pnpm
 
 WORKDIR /app

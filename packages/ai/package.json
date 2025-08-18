@@ -16,17 +16,24 @@
     "dev": "tsc --watch",
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:ui": "vitest --ui",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "@neolink/shared": "workspace:*"
+    "@neolink/shared": "workspace:*",
+    "puppeteer": "^24.16.2"
   },
   "devDependencies": {
     "@neolink/config": "workspace:*",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
+    "@vitest/ui": "^3.2.4",
     "eslint": "^8.55.0",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "vitest": "^3.2.4"
   }
 }

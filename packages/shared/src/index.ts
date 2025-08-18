@@ -7,6 +7,9 @@ export * from './api';
 // 导出验证工具
 export * from './validation';
 
+// 导出类型定义
+export * from './types';
+
 // 兼容性：保留原有接口定义
 export interface User {
   id: string;

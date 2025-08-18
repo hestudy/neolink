@@ -7,7 +7,7 @@ import {
   ListBookmarksSchema,
 } from '@neolink/shared/schemas';
 import { z } from 'zod';
-import { EnhancedContentExtractionService } from './content-extraction';
+import { ContentExtractionAdapter } from '@neolink/ai/services/ContentExtractionAdapter';
 import { getContentQueue } from './content-queue';
 import { Redis } from 'ioredis';
 
@@ -60,37 +60,41 @@ interface BookmarkServiceConfig {
 }
 
 /**
- * 向后兼容的内容提取器包装类
- * 使用新的增强内容提取服务
+ * 内容提取器包装类
+ * 使用新的基于Puppeteer的内容提取服务
  */
 class WebContentExtractor {
-  private enhancedExtractor: EnhancedContentExtractionService;
+  private contentAdapter: ContentExtractionAdapter;
 
-  constructor(redis?: Redis) {
-    this.enhancedExtractor = new EnhancedContentExtractionService({
-      redis,
+  constructor(_redis?: Redis) {
+    this.contentAdapter = new ContentExtractionAdapter({
       timeout: 30000,
-      maxContentSize: 50000,
-      blockedDomains: [
-        'localhost',
-        '127.0.0.1',
-        '0.0.0.0',
-        '::1',
-        '169.254.169.254', // AWS metadata
-        '10.0.0.0/8',
-        '172.16.0.0/12',
-        '192.168.0.0/16',
-      ],
       enableCache: true,
       cacheTtl: 7 * 24 * 3600, // 7天缓存
+      enableScreenshots: false, // 默认关闭截图以提高性能
+      enableFullContent: true,
     });
   }
 
   /**
-   * 提取网页内容（使用增强的内容提取服务）
+   * 提取网页内容（使用新的Puppeteer内容提取服务）
    */
   async extractContent(url: string): Promise<WebContentExtraction> {
-    return this.enhancedExtractor.extractContent(url);
+    return this.contentAdapter.extractContent(url);
+  }
+
+  /**
+   * 检查服务是否就绪
+   */
+  async isReady(): Promise<boolean> {
+    return this.contentAdapter.isReady();
+  }
+
+  /**
+   * 关闭并清理资源
+   */
+  async close(): Promise<void> {
+    await this.contentAdapter.close();
   }
 }
 
