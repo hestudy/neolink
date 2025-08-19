@@ -1,21 +1,43 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useBookmarksStore } from '@/stores/bookmarks';
 import { BookmarkCard } from './BookmarkCard';
+import { EditBookmarkDialog } from '@/components/dialogs/EditBookmarkDialog';
+import { DeleteConfirmDialog } from '@/components/dialogs/DeleteConfirmDialog';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { Bookmark } from '@neolink/shared/schemas';
 
-interface BookmarkListProps {
-  onEdit?: (id: string) => void;
-  onDelete?: (id: string) => void;
-}
+interface BookmarkListProps {}
 
-export function BookmarkList({ onEdit, onDelete }: BookmarkListProps) {
+export function BookmarkList(props: BookmarkListProps) {
+  const [editingBookmark, setEditingBookmark] = useState<Bookmark | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [deletingBookmark, setDeletingBookmark] = useState<Bookmark | null>(
+    null
+  );
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const { bookmarks, loading, error, fetchBookmarks } = useBookmarksStore();
 
   useEffect(() => {
     fetchBookmarks();
   }, [fetchBookmarks]);
+
+  const handleEdit = (bookmarkId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (bookmark) {
+      setEditingBookmark(bookmark);
+      setIsEditDialogOpen(true);
+    }
+  };
+
+  const handleDelete = (bookmarkId: string) => {
+    const bookmark = bookmarks.find((b) => b.id === bookmarkId);
+    if (bookmark) {
+      setDeletingBookmark(bookmark);
+      setIsDeleteDialogOpen(true);
+    }
+  };
 
   if (loading) {
     return (
@@ -46,15 +68,40 @@ export function BookmarkList({ onEdit, onDelete }: BookmarkListProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {bookmarks.map((bookmark) => (
-        <BookmarkCard
-          key={bookmark.id}
-          bookmark={bookmark}
-          onEdit={onEdit}
-          onDelete={onDelete}
-        />
-      ))}
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {bookmarks.map((bookmark) => (
+          <BookmarkCard
+            key={bookmark.id}
+            bookmark={bookmark}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
+
+      <EditBookmarkDialog
+        open={isEditDialogOpen}
+        onOpenChange={(open) => {
+          setIsEditDialogOpen(open);
+          if (!open) {
+            setEditingBookmark(null);
+          }
+        }}
+        bookmark={editingBookmark}
+      />
+
+      <DeleteConfirmDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={(open) => {
+          setIsDeleteDialogOpen(open);
+          if (!open) {
+            setDeletingBookmark(null);
+          }
+        }}
+        bookmark={deletingBookmark}
+        mode="single"
+      />
+    </>
   );
 }

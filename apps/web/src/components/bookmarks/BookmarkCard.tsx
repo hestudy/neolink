@@ -19,7 +19,7 @@ interface BookmarkCardProps {
   onDelete?: (id: string) => void;
 }
 
-export function BookmarkCard({
+export const BookmarkCard = React.memo(function BookmarkCard({
   bookmark,
   onEdit,
   onDelete,
@@ -121,4 +121,4 @@ export function BookmarkCard({
       </CardFooter>
     </Card>
   );
-}
+});

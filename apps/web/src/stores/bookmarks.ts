@@ -2,7 +2,15 @@ import { create } from 'zustand';
 import { api } from '@/lib/api-client';
 import { Bookmark } from '@neolink/shared/schemas';
 
+enum OperationType {
+  CREATING = 'creating',
+  UPDATING = 'updating',
+  DELETING = 'deleting',
+  PROCESSING = 'processing',
+}
+
 interface BookmarksState {
+  // 现有状态
   bookmarks: Bookmark[];
   loading: boolean;
   error: string | null;
@@ -18,6 +26,11 @@ interface BookmarksState {
     total: number;
   };
 
+  // 新增状态
+  selectedBookmarks: string[];
+  editingBookmark: string | null;
+  processingOperations: Map<string, OperationType>;
+
   // Actions
   fetchBookmarks: () => Promise<void>;
   createBookmark: (data: {
@@ -29,6 +42,14 @@ interface BookmarksState {
   deleteBookmark: (id: string) => Promise<void>;
   setFilters: (filters: Partial<BookmarksState['filters']>) => void;
   setPage: (page: number) => void;
+
+  // 新增操作
+  selectBookmark: (id: string) => void;
+  selectAllBookmarks: () => void;
+  clearSelection: () => void;
+  setEditingBookmark: (id: string | null) => void;
+  batchDeleteBookmarks: (ids: string[]) => Promise<void>;
+  batchUpdateTags: (ids: string[], tags: string[]) => Promise<void>;
 }
 
 export const useBookmarksStore = create<BookmarksState>((set, get) => ({
@@ -41,6 +62,9 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     limit: 20,
     total: 0,
   },
+  selectedBookmarks: [],
+  editingBookmark: null,
+  processingOperations: new Map(),
 
   fetchBookmarks: async () => {
     set({ loading: true, error: null });
@@ -103,5 +127,51 @@ export const useBookmarksStore = create<BookmarksState>((set, get) => ({
     set((state) => ({
       pagination: { ...state.pagination, page },
     }));
+  },
+
+  selectBookmark: (id) => {
+    set((state) => ({
+      selectedBookmarks: state.selectedBookmarks.includes(id)
+        ? state.selectedBookmarks.filter((bookmarkId) => bookmarkId !== id)
+        : [...state.selectedBookmarks, id],
+    }));
+  },
+
+  selectAllBookmarks: () => {
+    set((state) => ({
+      selectedBookmarks:
+        state.selectedBookmarks.length === state.bookmarks.length
+          ? []
+          : state.bookmarks.map((bookmark) => bookmark.id),
+    }));
+  },
+
+  clearSelection: () => {
+    set({ selectedBookmarks: [] });
+  },
+
+  setEditingBookmark: (id) => {
+    set({ editingBookmark: id });
+  },
+
+  batchDeleteBookmarks: async (ids) => {
+    try {
+      const promises = ids.map((id) => api.bookmarks.delete({ id }));
+      await Promise.all(promises);
+      await get().fetchBookmarks();
+      set({ selectedBookmarks: [] });
+    } catch (error) {
+      throw new Error('Failed to delete bookmarks');
+    }
+  },
+
+  batchUpdateTags: async (ids, tags) => {
+    try {
+      const promises = ids.map((id) => api.bookmarks.update({ id, tags }));
+      await Promise.all(promises);
+      await get().fetchBookmarks();
+    } catch (error) {
+      throw new Error('Failed to update bookmark tags');
+    }
   },
 }));
