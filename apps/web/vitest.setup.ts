@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom/vitest';
 import { vi } from 'vitest';
+import * as React from 'react';
 
 // Mock window.localStorage
 const localStorageMock = (() => {
@@ -44,3 +45,13 @@ Object.defineProperty(window, 'open', {
   value: vi.fn(),
   writable: true,
 });
+
+// Make React available globally
+(globalThis as any).React = React;
+
+// Mock React JSX Runtime
+vi.mock('react/jsx-runtime', () => ({
+  jsx: React.createElement,
+  jsxs: React.createElement,
+  Fragment: React.Fragment,
+}));

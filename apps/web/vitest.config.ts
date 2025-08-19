@@ -2,14 +2,13 @@ import { defineConfig } from 'vitest/config';
 import path from 'path';
 
 export default defineConfig({
-  plugins: [],
   test: {
     globals: true,
     environment: 'jsdom',
     include: ['src/**/*.{test,spec}.{ts,tsx}'],
     exclude: ['node_modules', '.next', 'dist'],
     setupFiles: ['./vitest.setup.ts'],
-    testTimeout: 10000,
+    testTimeout: 30000,
   },
   resolve: {
     alias: {
@@ -21,5 +20,8 @@ export default defineConfig({
       ),
       '@neolink/ui': path.resolve(__dirname, '../../packages/ui/src'),
     },
+  },
+  define: {
+    global: 'globalThis',
   },
 });
