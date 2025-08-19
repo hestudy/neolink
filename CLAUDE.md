@@ -203,3 +203,7 @@ This is NeoLink, an AI-powered bookmark management platform with:
 - Full-text and semantic search
 - Docker-based deployment for self-hosting
 - Modern TypeScript monorepo architecture
+
+## Output Language
+
+Always respond in Chinese Simple
