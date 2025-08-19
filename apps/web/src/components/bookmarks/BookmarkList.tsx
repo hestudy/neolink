@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect } from 'react';
 import { useBookmarksStore } from '@/stores/bookmarks';
 import { BookmarkCard } from './BookmarkCard';
