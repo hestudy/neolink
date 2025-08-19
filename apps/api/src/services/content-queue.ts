@@ -51,7 +51,7 @@ export class ContentExtractionQueue {
   constructor(redis: Redis) {
     // 初始化内容提取服务
     this.contentExtractor = new ContentExtractionAdapter({
-      timeout: 30000,
+      timeout: 45000, // 增加到45秒给更多时间处理复杂页面
       enableCache: true,
       cacheTtl: 7 * 24 * 3600, // 7天缓存
       enableScreenshots: true, // 在后台任务中启用截图
@@ -64,11 +64,12 @@ export class ContentExtractionQueue {
       defaultJobOptions: {
         removeOnComplete: 100,
         removeOnFail: 50,
-        attempts: 3,
+        attempts: 2, // 减少重试次数，避免长时间阻塞
         backoff: {
           type: 'exponential',
-          delay: 2000,
+          delay: 5000, // 增加重试间隔
         },
+        delay: 1000, // 添加作业延迟
       },
     });
 
@@ -78,11 +79,14 @@ export class ContentExtractionQueue {
       this.processJob.bind(this),
       {
         connection: redis,
-        concurrency: 3,
+        concurrency: 2, // 降低并发数，减少系统负载
         limiter: {
-          max: 10,
-          duration: 60000, // 每分钟最多处理10个任务
+          max: 8, // 降低处理频率
+          duration: 60000, // 每分钟最多处理8个任务
         },
+        // 添加连接选项确保稳定性
+        skipLockRenewal: false, // 确保锁会被更新
+        skipStalledCheck: false, // 不跳过停滞检查
       }
     );
 
@@ -98,7 +102,12 @@ export class ContentExtractionQueue {
   ): Promise<Job<ContentExtractionJobData>> {
     return this.queue.add('extract-content', data, {
       priority: data.priority || 0,
-      delay: 0,
+      delay: 1000, // 1秒延迟启动
+      attempts: 2, // 最多重试2次
+      backoff: {
+        type: 'exponential',
+        delay: 5000,
+      },
     });
   }
 
@@ -109,36 +118,67 @@ export class ContentExtractionQueue {
     job: Job<ContentExtractionJobData>
   ): Promise<ContentExtractionResult> {
     const { bookmarkId, url, userId } = job.data;
+    const startTime = Date.now();
 
     try {
       console.log(
         `Processing content extraction for bookmark ${bookmarkId}, URL: ${url}`
       );
 
-      // 提取内容
-      const content = await this.contentExtractor.extractContent(url);
+      // 设置超时保护
+      const extractionPromise = this.contentExtractor.extractContent(url);
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(
+          () => reject(new Error('Content extraction timeout')),
+          50000
+        ); // 50秒硬超时
+      });
+
+      // 竞争执行，哪个先完成就用哪个
+      const content = (await Promise.race([
+        extractionPromise,
+        timeoutPromise,
+      ])) as WebContentExtraction;
 
       // 更新数据库中的书签信息
       await this.updateBookmarkContent(bookmarkId, userId, content);
 
-      console.log(`Content extraction completed for bookmark ${bookmarkId}`);
+      const processingTime = Date.now() - startTime;
+      console.log(
+        `Content extraction completed for bookmark ${bookmarkId} in ${processingTime}ms`
+      );
 
       return {
         success: true,
         content,
       };
     } catch (error) {
+      const processingTime = Date.now() - startTime;
       console.error(
-        `Content extraction failed for bookmark ${bookmarkId}:`,
+        `Content extraction failed for bookmark ${bookmarkId} after ${processingTime}ms:`,
         error
       );
 
       // 更新书签状态为失败
       await this.updateBookmarkStatus(bookmarkId, userId, 'failed');
 
+      // 根据错误类型返回不同的错误信息
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) {
+        errorMessage = error.message;
+
+        // 超时错误特殊处理
+        if (
+          errorMessage.includes('timeout') ||
+          errorMessage.includes('Timeout')
+        ) {
+          errorMessage = `Content extraction timeout (${processingTime}ms)`;
+        }
+      }
+
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
       };
     }
   }

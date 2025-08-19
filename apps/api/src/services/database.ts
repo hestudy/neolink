@@ -15,7 +15,7 @@ const redisConfig = {
   lazyConnect: true,
   keepAlive: 30000,
   connectTimeout: 10000,
-  commandTimeout: 5000,
+  commandTimeout: 60000, // 增加到60秒，支持长时间运行的队列任务
 };
 
 /**
