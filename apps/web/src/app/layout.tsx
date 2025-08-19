@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { Layout } from '@/components/layout/Layout';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
+import { Toaster } from '@/lib/toast';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -21,6 +22,7 @@ export default function RootLayout({
       <body className={`${inter.className} antialiased`}>
         <ErrorBoundary>
           <Layout>{children}</Layout>
+          <Toaster />
         </ErrorBoundary>
       </body>
     </html>

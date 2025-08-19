@@ -1,0 +1,13 @@
+trace:
+  totals:
+    requirements: 8
+    full: 6
+    partial: 2
+    none: 0
+  planning_ref: 'docs/qa/assessments/1.8-bookmark-management-interface-trace-20250819.md'
+  uncovered:
+    - ac: 'AC4'
+      reason: 'No dedicated tests for BookmarkStatusIndicator component and status transitions'
+    - ac: 'AC6'
+      reason: 'Limited coverage of real-time validation feedback and form state management'
+  notes: 'See docs/qa/assessments/1.8-bookmark-management-interface-trace-20250819.md for full traceability matrix'
