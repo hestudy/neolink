@@ -4,12 +4,32 @@ import userEvent from '@testing-library/user-event';
 import { vi } from 'vitest';
 import { EditBookmarkDialog } from './EditBookmarkDialog';
 import { Bookmark } from '@neolink/shared/schemas';
+import { useBookmarksStore } from '@/stores/bookmarks';
 
 // Mock the stores and utilities
 vi.mock('@/stores/bookmarks', () => ({
-  useBookmarksStore: () => ({
+  useBookmarksStore: vi.fn(() => ({
     updateBookmark: vi.fn(),
-  }),
+    bookmarks: [],
+    loading: false,
+    error: null,
+    fetchBookmarks: vi.fn(),
+    createBookmark: vi.fn(),
+    deleteBookmark: vi.fn(),
+    setFilters: vi.fn(),
+    setPage: vi.fn(),
+    selectedBookmarks: [],
+    editingBookmark: null,
+    processingOperations: new Map(),
+    selectBookmark: vi.fn(),
+    selectAllBookmarks: vi.fn(),
+    clearSelection: vi.fn(),
+    setEditingBookmark: vi.fn(),
+    batchDeleteBookmarks: vi.fn(),
+    batchUpdateTags: vi.fn(),
+    filters: {},
+    pagination: { page: 1, limit: 20, total: 0 },
+  })),
 }));
 
 vi.mock('@/lib/toast', () => ({
@@ -192,7 +212,8 @@ describe('EditBookmarkDialog', () => {
     expect(screen.getByText('tag-19')).toBeInTheDocument();
 
     // Try to add 21st tag (should not work)
-    await user.clear(tagInput);
+    await user.click(tagInput);
+    await user.keyboard('{Control>}a{/Control}');
     await user.type(tagInput, 'tag-20');
     await user.keyboard('{Enter}');
     expect(screen.queryByText('tag-20')).not.toBeInTheDocument();
@@ -239,9 +260,9 @@ describe('EditBookmarkDialog', () => {
   it('should call updateBookmark on form submission', async () => {
     const mockUpdateBookmark = vi.fn().mockResolvedValue(undefined);
 
-    vi.mocked(require('@/stores/bookmarks').useBookmarksStore).mockReturnValue({
+    vi.mocked(useBookmarksStore).mockReturnValue({
       updateBookmark: mockUpdateBookmark,
-    });
+    } as any);
 
     const user = userEvent.setup();
     render(
@@ -275,9 +296,9 @@ describe('EditBookmarkDialog', () => {
       () => new Promise((resolve) => setTimeout(resolve, 1000))
     );
 
-    vi.mocked(require('@/stores/bookmarks').useBookmarksStore).mockReturnValue({
+    vi.mocked(useBookmarksStore).mockReturnValue({
       updateBookmark: mockUpdateBookmark,
-    });
+    } as any);
 
     const user = userEvent.setup();
     render(
@@ -298,9 +319,9 @@ describe('EditBookmarkDialog', () => {
   it('should call onOpenChange with false on successful submission', async () => {
     const mockUpdateBookmark = vi.fn().mockResolvedValue(undefined);
 
-    vi.mocked(require('@/stores/bookmarks').useBookmarksStore).mockReturnValue({
+    vi.mocked(useBookmarksStore).mockReturnValue({
       updateBookmark: mockUpdateBookmark,
-    });
+    } as any);
 
     const user = userEvent.setup();
     render(

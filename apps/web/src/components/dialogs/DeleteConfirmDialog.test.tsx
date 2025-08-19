@@ -107,8 +107,8 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should call deleteBookmark on confirm', async () => {
-      const mockDeleteBookmark = vi.fn().mockResolvedValue(undefined);
       const { useBookmarksStore } = await import('../../stores/bookmarks');
+      const mockDeleteBookmark = vi.fn().mockResolvedValue(undefined);
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: mockDeleteBookmark,
@@ -135,8 +135,8 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should call onOpenChange with false after successful deletion', async () => {
-      const mockDeleteBookmark = vi.fn().mockResolvedValue(undefined);
       const { useBookmarksStore } = await import('../../stores/bookmarks');
+      const mockDeleteBookmark = vi.fn().mockResolvedValue(undefined);
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: mockDeleteBookmark,
@@ -163,10 +163,10 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should show loading state during deletion', async () => {
+      const { useBookmarksStore } = await import('../../stores/bookmarks');
       const mockDeleteBookmark = vi.fn(
         () => new Promise((resolve) => setTimeout(resolve, 1000))
       );
-      const { useBookmarksStore } = await import('../../stores/bookmarks');
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: mockDeleteBookmark,
@@ -246,9 +246,9 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should call batchDeleteBookmarks on confirm', async () => {
+      const { useBookmarksStore } = await import('../../stores/bookmarks');
       const mockBatchDeleteBookmarks = vi.fn().mockResolvedValue(undefined);
       const mockClearSelection = vi.fn();
-      const { useBookmarksStore } = await import('../../stores/bookmarks');
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: vi.fn(),
@@ -278,16 +278,10 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should show correct success message for batch deletion', async () => {
-      const mockShowSuccess = vi.fn();
-      const mockBatchDeleteBookmarks = vi.fn().mockResolvedValue(undefined);
       const { useBookmarksStore } = await import('../../stores/bookmarks');
-
-      // Mock the toast module before using it
-      vi.doMock('../../lib/toast', () => ({
-        showSuccess: mockShowSuccess,
-        showError: vi.fn(),
-        showLoading: vi.fn(() => 'mock-toast-id'),
-      }));
+      const { showSuccess } = await import('../../lib/toast');
+      const mockBatchDeleteBookmarks = vi.fn().mockResolvedValue(undefined);
+      const mockShowSuccess = vi.mocked(showSuccess);
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: vi.fn(),
@@ -335,18 +329,12 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should handle deletion errors gracefully', async () => {
+      const { useBookmarksStore } = await import('../../stores/bookmarks');
+      const { showError } = await import('../../lib/toast');
       const mockDeleteBookmark = vi
         .fn()
         .mockRejectedValue(new Error('删除失败'));
-      const mockShowError = vi.fn();
-      const { useBookmarksStore } = await import('../../stores/bookmarks');
-
-      // Mock the toast module before using it
-      vi.doMock('../../lib/toast', () => ({
-        showSuccess: vi.fn(),
-        showError: mockShowError,
-        showLoading: vi.fn(() => 'mock-toast-id'),
-      }));
+      const mockShowError = vi.mocked(showError);
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: mockDeleteBookmark,
@@ -373,10 +361,10 @@ describe('DeleteConfirmDialog', () => {
     });
 
     it('should disable cancel button during deletion', async () => {
+      const { useBookmarksStore } = await import('../../stores/bookmarks');
       const mockDeleteBookmark = vi.fn(
         () => new Promise((resolve) => setTimeout(resolve, 1000))
       );
-      const { useBookmarksStore } = await import('../../stores/bookmarks');
 
       vi.mocked(useBookmarksStore).mockReturnValue({
         deleteBookmark: mockDeleteBookmark,
