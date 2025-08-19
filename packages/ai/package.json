@@ -23,7 +23,9 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.60.0",
     "@neolink/shared": "workspace:*",
+    "openai": "^5.12.2",
     "puppeteer": "^24.16.2"
   },
   "devDependencies": {

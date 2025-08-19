@@ -1,10 +1,4 @@
-// AI service types
-export interface AIProvider {
-  name: string;
-  apiKey: string;
-  baseUrl?: string;
-}
-
+// Legacy types - maintained for backwards compatibility
 export interface SummaryRequest {
   content: string;
   maxLength?: number;
@@ -24,3 +18,6 @@ export interface TagsResponse {
   tags: string[];
   confidence: number;
 }
+
+// Re-export new AI types
+export * from './types/index';

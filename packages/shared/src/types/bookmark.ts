@@ -2,6 +2,8 @@
  * Bookmark management types - extended from schemas
  */
 
+import type { Bookmark } from '../schemas/index.js';
+
 export interface BookmarkFilters {
   search?: string;
   tags?: string[];
@@ -18,7 +20,7 @@ export interface BookmarkSortOptions {
 }
 
 export interface BookmarkListResponse {
-  items: any[];
+  items: Bookmark[];
   total: number;
   page: number;
   limit: number;

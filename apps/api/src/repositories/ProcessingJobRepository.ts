@@ -105,22 +105,15 @@ export class ProcessingJobRepository {
     options: Omit<ProcessingJobQueryOptions, 'bookmarkId'> = {}
   ): Promise<ProcessingJob[]> {
     try {
-      let query: any = db
-        .select()
-        .from(processingJobs)
-        .where(eq(processingJobs.bookmarkId, bookmarkId));
+      // 构建所有条件
+      const conditions = [eq(processingJobs.bookmarkId, bookmarkId)];
 
       // 添加状态过滤
       if (options.status) {
         const statuses = Array.isArray(options.status)
           ? options.status
           : [options.status];
-        query = query.where(
-          and(
-            eq(processingJobs.bookmarkId, bookmarkId),
-            inArray(processingJobs.status, statuses)
-          )
-        );
+        conditions.push(inArray(processingJobs.status, statuses));
       }
 
       // 添加类型过滤
@@ -128,32 +121,31 @@ export class ProcessingJobRepository {
         const types = Array.isArray(options.type)
           ? options.type
           : [options.type];
-        query = query.where(
-          and(
-            eq(processingJobs.bookmarkId, bookmarkId),
-            inArray(processingJobs.type, types)
-          )
-        );
+        conditions.push(inArray(processingJobs.type, types));
       }
 
       // 添加排序
       const sortBy = options.sortBy || 'createdAt';
       const sortOrder = options.sortOrder || 'desc';
       const sortColumn = processingJobs[sortBy];
-      query =
-        sortOrder === 'asc'
-          ? query.orderBy(asc(sortColumn))
-          : query.orderBy(desc(sortColumn));
 
-      // 添加分页
-      if (options.limit) {
-        query = query.limit(options.limit);
-      }
-      if (options.offset) {
-        query = query.offset(options.offset);
-      }
+      // 构建完整查询链
+      const queryBuilder = db
+        .select()
+        .from(processingJobs)
+        .where(and(...conditions))
+        .orderBy(sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn));
 
-      return await query;
+      // 按条件构建最终查询
+      if (options.limit && options.offset) {
+        return await queryBuilder.limit(options.limit).offset(options.offset);
+      } else if (options.limit) {
+        return await queryBuilder.limit(options.limit);
+      } else if (options.offset) {
+        return await queryBuilder.offset(options.offset);
+      } else {
+        return await queryBuilder;
+      }
     } catch (error) {
       console.error('Error finding processing jobs by bookmark ID:', error);
       return [];
@@ -191,28 +183,36 @@ export class ProcessingJobRepository {
         conditions.push(eq(processingJobs.bookmarkId, options.bookmarkId));
       }
 
-      // 构建查询
-      let query: any = db.select().from(processingJobs);
-      let countQuery: any = db.select({ count: count() }).from(processingJobs);
-
-      if (conditions.length > 0) {
-        const whereClause =
-          conditions.length === 1 ? conditions[0] : and(...conditions);
-        query = query.where(whereClause);
-        countQuery = countQuery.where(whereClause);
-      }
-
       // 添加排序
       const sortBy = options.sortBy || 'createdAt';
       const sortOrder = options.sortOrder || 'desc';
       const sortColumn = processingJobs[sortBy];
-      query =
-        sortOrder === 'asc'
-          ? query.orderBy(asc(sortColumn))
-          : query.orderBy(desc(sortColumn));
 
-      // 添加分页
-      query = query.limit(limit).offset(offset);
+      // 构建查询
+      const whereClause =
+        conditions.length > 0
+          ? conditions.length === 1
+            ? conditions[0]
+            : and(...conditions)
+          : undefined;
+
+      const baseQuery = db.select().from(processingJobs);
+      const baseCountQuery = db.select({ count: count() }).from(processingJobs);
+
+      const query = whereClause
+        ? baseQuery
+            .where(whereClause)
+            .orderBy(sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn))
+            .limit(limit)
+            .offset(offset)
+        : baseQuery
+            .orderBy(sortOrder === 'asc' ? asc(sortColumn) : desc(sortColumn))
+            .limit(limit)
+            .offset(offset);
+
+      const countQuery = whereClause
+        ? baseCountQuery.where(whereClause)
+        : baseCountQuery;
 
       // 执行查询
       const [jobs, totalResult] = await Promise.all([query, countQuery]);

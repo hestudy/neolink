@@ -14,10 +14,14 @@ COPY turbo.json ./
 # 复制所有包的 package.json
 COPY apps/web/package.json ./apps/web/
 COPY apps/api/package.json ./apps/api/
-COPY packages/*/package.json ./packages/*/
+COPY packages/shared/package.json ./packages/shared/
+COPY packages/database/package.json ./packages/database/
+COPY packages/ai/package.json ./packages/ai/
+COPY packages/ui/package.json ./packages/ui/
+COPY packages/config/package.json ./packages/config/
 
 # 安装依赖
-RUN pnpm install --frozen-lockfile
+RUN pnpm install --no-frozen-lockfile
 
 # 开发阶段
 FROM base AS development

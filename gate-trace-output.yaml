@@ -1,0 +1,25 @@
+trace:
+  totals:
+    requirements: 8
+    full: 0
+    partial: 1
+    none: 7
+  planning_ref: 'docs/qa/assessments/2.1-test-design-20250819.md'
+  uncovered:
+    - ac: 'AC1'
+      reason: 'No tests for OpenAI API client integration and GPT-4o-mini calls'
+    - ac: 'AC2'
+      reason: 'No tests for Claude API client integration and failover mechanism'
+    - ac: 'AC3'
+      reason: 'No tests for AI service configuration management and validation'
+    - ac: 'AC4'
+      reason: 'No tests for error handling, retry mechanisms, and degradation strategies'
+    - ac: 'AC5'
+      reason: 'No tests for cost tracking and token usage recording'
+    - ac: 'AC6'
+      reason: 'No tests for AI service health checking and API availability monitoring'
+    - ac: 'AC7'
+      reason: 'No tests for AI call rate limiting and cost control mechanisms'
+    - ac: 'AC8'
+      reason: 'Limited tests for AI response caching (only content extraction caching exists)'
+  notes: 'See docs/qa/assessments/2.1.ai-service-integration-infrastructure-trace-20250819.md'
