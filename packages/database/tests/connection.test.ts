@@ -9,9 +9,9 @@ import {
 
 describe('Database Connection Tests', () => {
   beforeAll(async () => {
-    // Wait for database to be ready
+    // Quick check for database availability with minimal retry
     console.log('Waiting for database connection...');
-    const connected = await connectWithRetry(3, 2000);
+    const connected = await connectWithRetry(2, 500); // Only 2 attempts, 500ms delay
     if (!connected) {
       console.warn('Database not available for tests');
     }
