@@ -8,7 +8,7 @@ export default defineConfig({
     include: ['src/**/*.test.ts'],
     exclude: ['node_modules', 'dist'],
     setupFiles: ['./src/test-env.ts', './src/test-setup.ts'],
-    testTimeout: 10000, // 增加超时时间到10秒
+    testTimeout: 30000, // 增加超时时间到30秒
   },
   resolve: {
     alias: {

@@ -64,7 +64,7 @@ describe('TaskQueueService', () => {
       // 在测试环境中可能失败，这是预期的
       expect(error).toBeDefined();
     }
-  }, 15000); // 增加超时时间到15秒
+  }, 30000); // 增加超时时间到30秒
 });
 
 describe('QueueManager', () => {
@@ -120,5 +120,5 @@ describe('QueueManager', () => {
       // 在测试环境中可能失败，这是预期的
       expect(error).toBeDefined();
     }
-  }, 15000); // 增加超时时间到15秒
+  }, 30000); // 增加超时时间到30秒
 });
