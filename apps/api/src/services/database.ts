@@ -11,7 +11,7 @@ const redisConfig = {
   db: parseInt(process.env.REDIS_DB || '0'),
   retryDelayOnFailover: 100,
   enableReadyCheck: true,
-  maxRetriesPerRequest: 3,
+  maxRetriesPerRequest: null, // BullMQ requires this to be null
   lazyConnect: true,
   keepAlive: 30000,
   connectTimeout: 10000,

@@ -1,5 +1,6 @@
 import { BookmarkList } from '@/components/bookmarks/BookmarkList';
 import { AddBookmarkButton } from '@/components/bookmarks/AddBookmarkButton';
+import '@/lib/dev-auth'; // Auto-setup development authentication
 
 export default function Home() {
   return (

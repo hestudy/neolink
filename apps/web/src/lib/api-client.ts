@@ -1,4 +1,6 @@
-// Simple HTTP client for development with JWT auth support
+// Real HTTP client for development with JWT auth support
+const API_BASE_URL = 'http://localhost:8000/api/v1';
+
 const getAuthToken = () => {
   if (typeof window !== 'undefined') {
     return localStorage.getItem('authToken');
@@ -6,91 +8,61 @@ const getAuthToken = () => {
   return null;
 };
 
+const makeRequest = async (endpoint: string, options: RequestInit = {}) => {
+  const token = getAuthToken();
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...options.headers,
+  };
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  if (!response.ok) {
+    const errorData = await response
+      .json()
+      .catch(() => ({ error: 'Unknown error' }));
+    throw new Error(errorData.message || errorData.error || 'Request failed');
+  }
+
+  return response.json();
+};
+
 export const api = {
   bookmarks: {
     list: async () => {
-      // In a real implementation, this would include auth headers
-      const token = getAuthToken();
-
-      return [
-        {
-          id: '1',
-          url: 'https://example.com',
-          title: '示例书签 1',
-          description: '这是一个示例书签描述',
-          content: 'AI生成的摘要内容...',
-          favicon: 'https://example.com/favicon.ico',
-          userId: 'user-1',
-          tags: ['示例', '技术'],
-          isArchived: false,
-          isPrivate: false,
-          isFavorite: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          accessCount: 0,
-        },
-        {
-          id: '2',
-          url: 'https://github.com',
-          title: '示例书签 2',
-          description: 'GitHub 是一个代码托管平台',
-          content: 'GitHub 提供 Git 仓库托管服务...',
-          favicon: 'https://github.com/favicon.ico',
-          userId: 'user-1',
-          tags: ['开发', '工具'],
-          isArchived: false,
-          isPrivate: false,
-          isFavorite: true,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          accessCount: 5,
-        },
-      ];
+      const result = await makeRequest('/bookmarks');
+      return result.data || [];
     },
     get: async ({ id }: { id: string }) => {
-      // In a real implementation, this would include auth headers
-      const token = getAuthToken();
-
-      return {
-        id,
-        url: 'https://example.com',
-        title: '示例书签 #' + id,
-        description: '这是一个示例书签描述',
-        content: 'AI生成的摘要内容...',
-        favicon: 'https://example.com/favicon.ico',
-        userId: 'user-1',
-        tags: ['示例', '技术'],
-        isArchived: false,
-        isPrivate: false,
-        isFavorite: false,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        accessCount: 0,
-      };
+      const result = await makeRequest(`/bookmarks/${id}`);
+      return result.data;
     },
     create: async (data: any) => {
-      // In a real implementation, this would include auth headers
-      const token = getAuthToken();
-
-      return {
-        id: Date.now().toString(),
-        ...data,
-        userId: 'user-1',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
+      const result = await makeRequest('/bookmarks', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      });
+      return result.data;
     },
     update: async ({ id, ...data }: any) => {
-      // In a real implementation, this would include auth headers
-      const token = getAuthToken();
-
-      return { id, ...data, updatedAt: new Date() };
+      const result = await makeRequest(`/bookmarks/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      });
+      return result.data;
     },
     delete: async ({ id }: { id: string }) => {
-      // In a real implementation, this would include auth headers
-      const token = getAuthToken();
-
-      return { success: true };
+      const result = await makeRequest(`/bookmarks/${id}`, {
+        method: 'DELETE',
+      });
+      return result;
     },
   },
 
