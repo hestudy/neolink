@@ -257,17 +257,208 @@ Return tags as a comma-separated list. Focus on key topics, themes, and concepts
     tagsText: string,
     maxTags: number
   ): { tags: string[]; categories: string[] } {
-    // Parse comma-separated tags
+    try {
+      // First try to parse as JSON (structured response)
+      const parsed = JSON.parse(tagsText);
+      if (parsed.tags && Array.isArray(parsed.tags)) {
+        const tags = parsed.tags
+          .slice(0, maxTags)
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+
+        const categories =
+          parsed.categories && Array.isArray(parsed.categories)
+            ? parsed.categories
+                .map((cat: string) => cat.trim())
+                .filter((cat: string) => cat.length > 0)
+            : this.inferCategoriesFromTags(tags);
+
+        return { tags, categories };
+      }
+    } catch {
+      // Fall back to comma-separated parsing
+    }
+
+    // Parse comma-separated tags (fallback)
     const tags = tagsText
       .split(',')
       .map((tag) => tag.trim())
       .filter((tag) => tag.length > 0)
       .slice(0, maxTags);
 
-    // Extract categories (simplified - just return empty for now)
-    const categories: string[] = [];
+    // Infer categories from tags
+    const categories = this.inferCategoriesFromTags(tags);
 
     return { tags, categories };
+  }
+
+  private inferCategoriesFromTags(tags: string[]): string[] {
+    const categoryMap = new Map<string, string[]>();
+
+    // Technology categories
+    categoryMap.set('Technology', [
+      'tech',
+      'technology',
+      'programming',
+      'coding',
+      'development',
+      'software',
+      'hardware',
+      'computer',
+      'ai',
+      'ml',
+      'machine-learning',
+      'data-science',
+      'cloud',
+      'devops',
+      'javascript',
+      'typescript',
+      'python',
+      'java',
+      'react',
+      'node',
+      'api',
+      'database',
+      'frontend',
+      'backend',
+      'mobile',
+      'web',
+      'app',
+      'framework',
+      'library',
+    ]);
+
+    // Business categories
+    categoryMap.set('Business', [
+      'business',
+      'startup',
+      'entrepreneur',
+      'marketing',
+      'sales',
+      'finance',
+      'strategy',
+      'management',
+      'leadership',
+      'productivity',
+      'workflow',
+      'process',
+      'automation',
+      'analytics',
+      'growth',
+      'revenue',
+      'customer',
+      'market',
+      'competition',
+      'investment',
+    ]);
+
+    // Education categories
+    categoryMap.set('Education', [
+      'education',
+      'learning',
+      'tutorial',
+      'guide',
+      'course',
+      'training',
+      'teaching',
+      'study',
+      'academic',
+      'research',
+      'knowledge',
+      'skill',
+      'certification',
+      'university',
+      'college',
+      'school',
+      'lesson',
+      'workshop',
+      'seminar',
+    ]);
+
+    // Health categories
+    categoryMap.set('Health', [
+      'health',
+      'medical',
+      'fitness',
+      'wellness',
+      'healthcare',
+      'nutrition',
+      'diet',
+      'exercise',
+      'mental-health',
+      'therapy',
+      'medicine',
+      'doctor',
+      'hospital',
+      'treatment',
+      'prevention',
+      'recovery',
+      'lifestyle',
+    ]);
+
+    // Entertainment categories
+    categoryMap.set('Entertainment', [
+      'entertainment',
+      'media',
+      'movie',
+      'film',
+      'tv',
+      'show',
+      'music',
+      'game',
+      'gaming',
+      'sport',
+      'sports',
+      'art',
+      'design',
+      'creative',
+      'culture',
+      'hobby',
+      'fun',
+      'leisure',
+      'travel',
+      'photography',
+      'video',
+    ]);
+
+    // News categories
+    categoryMap.set('News', [
+      'news',
+      'politics',
+      'government',
+      'policy',
+      'election',
+      'world',
+      'international',
+      'economy',
+      'financial',
+      'society',
+      'social',
+      'current-events',
+      'breaking',
+      'update',
+      'announcement',
+      'report',
+    ]);
+
+    const matchedCategories = new Set<string>();
+    const lowerTags = tags.map((tag) => tag.toLowerCase());
+
+    // Find matching categories
+    for (const [category, keywords] of categoryMap) {
+      for (const tag of lowerTags) {
+        if (
+          keywords.some(
+            (keyword) => tag.includes(keyword) || keyword.includes(tag)
+          )
+        ) {
+          matchedCategories.add(category);
+          break;
+        }
+      }
+    }
+
+    return Array.from(matchedCategories).slice(0, 3); // Limit to 3 categories
   }
 
   calculateCost(usage: {

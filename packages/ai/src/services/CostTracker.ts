@@ -207,13 +207,16 @@ export class CostTracker {
     };
   }
 
-  isNearBudgetLimit(_percentage = 0.8): {
+  async isNearBudgetLimit(percentage = 0.8): Promise<{
     daily: boolean;
     monthly: boolean;
-  } {
+  }> {
+    const dailySpent = await this.getCurrentSpend('daily');
+    const monthlySpent = await this.getCurrentSpend('monthly');
+
     return {
-      daily: false, // Will be implemented when we have async getCurrentSpend
-      monthly: false, // Will be implemented when we have async getCurrentSpend
+      daily: dailySpent >= this.limits.dailyBudget * percentage,
+      monthly: monthlySpent >= this.limits.monthlyBudget * percentage,
     };
   }
 }
