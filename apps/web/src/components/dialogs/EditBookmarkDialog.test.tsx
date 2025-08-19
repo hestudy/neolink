@@ -6,6 +6,58 @@ import { EditBookmarkDialog } from './EditBookmarkDialog';
 import { Bookmark } from '@neolink/shared/schemas';
 import { useBookmarksStore } from '@/stores/bookmarks';
 
+// Mock react-hook-form
+vi.mock('react-hook-form', () => ({
+  useForm: () => ({
+    register: vi.fn(() => ({
+      name: 'test',
+      onBlur: vi.fn(),
+      onChange: vi.fn(),
+      ref: vi.fn(),
+    })),
+    handleSubmit: vi.fn((fn) => (e?: React.FormEvent) => {
+      e?.preventDefault();
+      return fn({});
+    }),
+    formState: {
+      errors: {},
+      isSubmitting: false,
+      isValid: true,
+    },
+    setValue: vi.fn(),
+    watch: vi.fn(() => []),
+    reset: vi.fn(),
+    control: {},
+    getValues: vi.fn(() => ({})),
+  }),
+  Controller: ({ children, render: renderProp }: any) => {
+    const mockField = {
+      value: [],
+      onChange: vi.fn(),
+      onBlur: vi.fn(),
+      name: 'test',
+      ref: vi.fn(),
+    };
+    const mockForm = {
+      formState: { error: null },
+    };
+    return renderProp
+      ? renderProp({ field: mockField, formState: mockForm })
+      : children;
+  },
+  FormProvider: ({ children }: any) =>
+    React.createElement('div', { 'data-testid': 'form-provider' }, children),
+  useFormContext: () => ({
+    formState: { errors: {} },
+    register: vi.fn(),
+  }),
+}));
+
+// Mock @hookform/resolvers
+vi.mock('@hookform/resolvers/zod', () => ({
+  zodResolver: vi.fn(() => vi.fn()),
+}));
+
 // Mock the stores and utilities
 vi.mock('@/stores/bookmarks', () => ({
   useBookmarksStore: vi.fn(() => ({
@@ -36,6 +88,45 @@ vi.mock('@/lib/toast', () => ({
   showSuccess: vi.fn(),
   showError: vi.fn(),
   showLoading: vi.fn(() => 'mock-toast-id'),
+}));
+
+// Mock all UI components to avoid React hooks issues
+vi.mock('@neolink/ui', () => ({
+  Dialog: ({ children, open }: any) =>
+    open
+      ? React.createElement('div', { 'data-testid': 'dialog' }, children)
+      : null,
+  DialogContent: ({ children }: any) =>
+    React.createElement('div', { 'data-testid': 'dialog-content' }, children),
+  DialogHeader: ({ children }: any) =>
+    React.createElement('div', { 'data-testid': 'dialog-header' }, children),
+  DialogTitle: ({ children }: any) => React.createElement('h2', {}, children),
+  DialogDescription: ({ children }: any) =>
+    React.createElement('p', {}, children),
+  DialogFooter: ({ children }: any) =>
+    React.createElement('div', { 'data-testid': 'dialog-footer' }, children),
+  Button: ({ children, onClick }: any) =>
+    React.createElement('button', { onClick }, children),
+  Input: ({ value, onChange, ...props }: any) =>
+    React.createElement('input', { value, onChange, ...props }),
+  Label: ({ children }: any) => React.createElement('label', {}, children),
+  Textarea: ({ value, onChange, ...props }: any) =>
+    React.createElement('textarea', { value, onChange, ...props }),
+}));
+
+vi.mock('@/components/ui/form', () => ({
+  Form: ({ children }: any) => React.createElement('form', {}, children),
+  FormControl: ({ children }: any) => React.createElement('div', {}, children),
+  FormField: ({ children, render }: any) => {
+    const mockField = { value: '', onChange: vi.fn(), name: 'test' };
+    const mockForm = { formState: { error: null } };
+    return render
+      ? render({ field: mockField, formState: mockForm })
+      : children;
+  },
+  FormItem: ({ children }: any) => React.createElement('div', {}, children),
+  FormLabel: ({ children }: any) => React.createElement('label', {}, children),
+  FormMessage: ({ children }: any) => React.createElement('div', {}, children),
 }));
 
 const mockBookmark: Bookmark = {
