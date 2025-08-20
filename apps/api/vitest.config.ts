@@ -29,6 +29,10 @@ export default defineConfig({
         __dirname,
         '../../packages/database/src/schema.ts'
       ),
+      '@neolink/database/src/schema': path.resolve(
+        __dirname,
+        '../../packages/database/src/schema.ts'
+      ),
       '@neolink/ai': path.resolve(__dirname, '../../packages/ai/src'),
     },
   },
