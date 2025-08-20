@@ -6,10 +6,10 @@ import {
   versionRoute,
 } from './routes/system';
 import {
-  loginRoute,
-  registerRoute,
-  refreshTokenRoute,
-  logoutRoute,
+  loginRoute as _loginRoute,
+  registerRoute as _registerRoute,
+  refreshTokenRoute as _refreshTokenRoute,
+  logoutRoute as _logoutRoute,
   // getCurrentUserRoute, // implemented in routes/auth.ts
 } from './routes/auth';
 
@@ -93,63 +93,51 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     });
   });
 
-  // 认证路由（占位符实现）
-  app.openapi(loginRoute, async (c) => {
-    // TODO: 实现实际的登录逻辑
+  // 认证路由的OpenAPI定义（用于文档生成）
+  // 注意：实际的认证逻辑在 routes/auth.ts 中实现
+  app.openapi(_loginRoute, (c) => {
     return c.json(
       {
         success: false,
-        error: 'Not Implemented',
-        message: 'Login endpoint - to be implemented',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId') || 'unknown',
+        error: 'NOT_IMPLEMENTED',
+        message: 'Use /api/v1/auth/login endpoint',
       },
-      400 // Bad request - not implemented
+      400
     );
   });
 
-  app.openapi(registerRoute, async (c) => {
-    // TODO: 实现实际的注册逻辑
+  app.openapi(_registerRoute, (c) => {
     return c.json(
       {
         success: false,
-        error: 'Conflict',
-        message: 'Register endpoint - to be implemented',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId') || 'unknown',
+        error: 'NOT_IMPLEMENTED',
+        message: 'Use /api/v1/auth/register endpoint',
       },
-      409 // 使用 409 状态码，因为这是 OpenAPI 规范中定义的状态码之一
+      400
     );
   });
 
-  app.openapi(refreshTokenRoute, async (c) => {
-    // TODO: 实现实际的刷新令牌逻辑
+  app.openapi(_refreshTokenRoute, (c) => {
     return c.json(
       {
         success: false,
-        error: 'Unauthorized',
-        message: 'Refresh token endpoint - to be implemented',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId') || 'unknown',
+        error: 'NOT_IMPLEMENTED',
+        message: 'Use /api/v1/auth/refresh endpoint',
       },
-      401 // 使用 401 状态码，因为这是 OpenAPI 规范中定义的状态码之一
+      400
     );
   });
 
-  app.openapi(logoutRoute, async (c) => {
-    // TODO: 实现实际的登出逻辑
+  app.openapi(_logoutRoute, (c) => {
     return c.json(
       {
-        success: true,
-        message: 'Logout endpoint - to be implemented',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId') || 'unknown',
+        success: false,
+        error: 'NOT_IMPLEMENTED',
+        message: 'Use /api/v1/auth/logout endpoint',
       },
-      200 // 使用 200 状态码，因为这是 OpenAPI 规范中定义的状态码之一
+      400
     );
   });
-
-  // Note: /me route is implemented in routes/auth.ts
 
   console.log('✅ OpenAPI routes configured');
 }

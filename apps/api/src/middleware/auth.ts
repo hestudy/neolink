@@ -1,6 +1,7 @@
 import { Context, Next } from 'hono';
 import { HTTPException } from 'hono/http-exception';
 import { verifyAccessToken } from '../utils/jwt';
+import { tokenBlacklistService } from '../services/tokenBlacklistService';
 import type { UserContext } from '@neolink/shared';
 
 /**
@@ -38,6 +39,15 @@ export function authMiddleware(options: AuthMiddlewareOptions = {}) {
     const token = authorization.substring(7); // Remove 'Bearer ' prefix
 
     try {
+      // 检查token是否在黑名单中
+      const isBlacklisted =
+        await tokenBlacklistService.isTokenBlacklisted(token);
+      if (isBlacklisted) {
+        throw new HTTPException(401, {
+          message: 'Token has been revoked',
+        });
+      }
+
       const payload = verifyAccessToken(token);
 
       // 构建用户上下文

@@ -118,7 +118,7 @@ describe('OpenAPI Integration', () => {
 
     const data = await res.json();
     expect(data.success).toBe(false);
-    expect(data.message).toContain('to be implemented');
+    expect(data.message).toContain('Use /api/v1/auth/login endpoint');
   });
 
   it('should include proper OpenAPI schema validation', async () => {

@@ -16,14 +16,21 @@ export const users = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     email: text('email').notNull().unique(),
+    password: text('password').notNull(),
     name: text('name'),
+    isActive: boolean('is_active').default(true).notNull(),
+    emailVerified: boolean('email_verified').default(false).notNull(),
+    resetToken: text('reset_token'),
+    resetTokenExpires: timestamp('reset_token_expires'),
     preferences: jsonb('preferences').default({}),
     aiSettings: jsonb('ai_settings').default({}),
     createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at').defaultNow().notNull(),
     lastLoginAt: timestamp('last_login_at'),
   },
   (table) => ({
     emailIdx: index('idx_users_email').on(table.email),
+    resetTokenIdx: index('idx_users_reset_token').on(table.resetToken),
   })
 );
 

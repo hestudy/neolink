@@ -1,0 +1,26 @@
+trace:
+  totals:
+    requirements: 8
+    full: 6
+    partial: 2
+    none: 0
+  planning_ref: 'docs/qa/assessments/1.9.user-authentication-system-trace-20250820.md'
+  uncovered:
+    - ac: 'AC2'
+      reason: '缺少前端认证组件的完整测试覆盖'
+    - ac: 'AC3'
+      reason: '缺少AuthContext和useAuth hook的单元测试'
+  coverage_gaps:
+    - type: 'frontend-components'
+      priority: 'high'
+      description: '认证页面组件缺少React Testing Library测试'
+      risk: '用户界面回归可能破坏认证流程'
+    - type: 'state-management'
+      priority: 'high'
+      description: '认证状态管理缺少全面测试'
+      risk: '状态不一致可能导致认证失败'
+  recommendations:
+    - 'implement_react_testing_library_tests_for_auth_components'
+    - 'add_comprehensive_authcontext_and_useauth_tests'
+    - 'create_integration_tests_for_complete_auth_flow'
+  notes: '后端认证基础设施测试覆盖完整，主要问题在前端测试覆盖不足。核心认证功能已验证工作正常。'

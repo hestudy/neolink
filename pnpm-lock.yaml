@@ -51,6 +51,9 @@ importers:
       '@hono/zod-openapi':
         specifier: ^1.1.0
         version: 1.1.0(hono@4.9.2)(zod@4.0.17)
+      '@hono/zod-validator':
+        specifier: ^0.7.2
+        version: 0.7.2(hono@4.9.2)(zod@4.0.17)
       '@neolink/ai':
         specifier: workspace:*
         version: link:../../packages/ai
@@ -324,6 +327,9 @@ importers:
       '@neolink/shared':
         specifier: workspace:*
         version: link:../shared
+      bcryptjs:
+        specifier: ^3.0.2
+        version: 3.0.2
       drizzle-orm:
         specifier: ^0.36.0
         version: 0.36.4(@types/pg@8.15.5)(pg@8.16.3)
@@ -337,6 +343,9 @@ importers:
       '@neolink/config':
         specifier: workspace:*
         version: link:../config
+      '@types/bcryptjs':
+        specifier: ^3.0.0
+        version: 3.0.0
       '@types/node':
         specifier: ^20.10.0
         version: 20.19.11
@@ -2551,7 +2560,6 @@ packages:
     deprecated: This is a stub types definition. bcryptjs provides its own type definitions, so you do not need this installed.
     dependencies:
       bcryptjs: 3.0.2
-    dev: false
 
   /@types/chai@5.2.2:
     resolution: {integrity: sha512-8kB30R7Hwqf40JPiKhVzodJs2Qc1ZJ5zuT3uzw5Hq/dhNCl3G3l83jfpdI1e20BP348+fV7VIL/+FxaXkqBmWg==}
@@ -3450,7 +3458,6 @@ packages:
   /bcryptjs@3.0.2:
     resolution: {integrity: sha512-k38b3XOZKv60C4E2hVsXTolJWfkGRMbILBIe2IBITXciy5bOsTKot5kDrf3ZfufQtQOUN5mXceUEpU1rTl9Uog==}
     hasBin: true
-    dev: false
 
   /before-after-hook@2.2.3:
     resolution: {integrity: sha512-NzUnlZexiaH/46WDhANlyR2bXRopNg4F/zuSA3OpZnllCUgRaOF2znDioDWrmbNVsuZk6l9pMquQB38cfBZwkQ==}

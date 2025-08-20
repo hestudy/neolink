@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google';
 import { Layout } from '@/components/layout/Layout';
 import { ErrorBoundary } from '@/components/layout/ErrorBoundary';
 import { DevAuthSetup } from '@/components/DevAuthSetup';
+import { AuthProvider } from '@/contexts/AuthContext';
 import { Toaster } from '@/lib/toast';
 import './globals.css';
 
@@ -21,11 +22,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <DevAuthSetup />
-        <ErrorBoundary>
-          <Layout>{children}</Layout>
-          <Toaster />
-        </ErrorBoundary>
+        <AuthProvider>
+          <DevAuthSetup />
+          <ErrorBoundary>
+            <Layout>{children}</Layout>
+            <Toaster />
+          </ErrorBoundary>
+        </AuthProvider>
       </body>
     </html>
   );
