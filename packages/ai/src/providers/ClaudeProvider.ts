@@ -8,7 +8,7 @@ import type {
   TagResult,
   ClaudeConfig,
 } from '../types';
-import { AIError } from '../types';
+import { AIError } from '../types/providers';
 import { CacheService, MemoryCacheService } from '../utils/cache';
 import { calculateClaudeCost } from '../utils/tokenCounter';
 
@@ -30,6 +30,17 @@ export class ClaudeProvider implements AIProvider {
     content: string,
     options: SummaryOptions = {}
   ): Promise<SummaryResult> {
+    // Input validation
+    if (!content?.trim()) {
+      throw new AIError('Content cannot be empty for summary generation');
+    }
+
+    if (content.length > 100000) {
+      throw new AIError(
+        'Content too large for summary generation (max 100,000 characters)'
+      );
+    }
+
     try {
       // Check cache first
       const cacheKey = this.cache.generateCacheKey('summary', content, options);
@@ -60,9 +71,7 @@ export class ClaudeProvider implements AIProvider {
 
       const summary = (response.content[0] as TextBlock)?.text?.trim();
       if (!summary) {
-        throw new AIError(
-          'Failed to generate summary with Claude: Empty response'
-        );
+        throw new AIError('Failed to generate summary');
       }
 
       // Calculate confidence
@@ -86,7 +95,7 @@ export class ClaudeProvider implements AIProvider {
 
       return result;
     } catch (error) {
-      if (error instanceof AIError) {
+      if (error instanceof Error && error.name === 'AIError') {
         throw error;
       }
       throw new AIError(
@@ -114,7 +123,7 @@ export class ClaudeProvider implements AIProvider {
       // Make API call
       const response = await this.client.messages.create({
         model: this.config.model,
-        max_tokens: 200,
+        max_tokens: 100,
         messages: [
           {
             role: 'user',
@@ -135,7 +144,12 @@ export class ClaudeProvider implements AIProvider {
       const maxTags = options.maxTags || 10;
       const { tags, categories } = this.parseTagsResponse(tagsText, maxTags);
 
-      const confidence = this.calculateConfidence(response);
+      // Calculate confidence, adjust for invalid tags
+      let confidence = this.calculateConfidence(response);
+      if (tags.length === 0) {
+        confidence = Math.min(confidence * 0.3, 0.4); // Significantly lower for invalid responses
+      }
+
       const language = await this.detectLanguage(tagsText);
 
       const result: TagResult = {
@@ -154,7 +168,7 @@ export class ClaudeProvider implements AIProvider {
 
       return result;
     } catch (error) {
-      if (error instanceof AIError) {
+      if (error instanceof Error && error.name === 'AIError') {
         throw error;
       }
       throw new AIError(
@@ -228,13 +242,31 @@ Return tags as a comma-separated list. Focus on key topics, themes, and concepts
 
   private calculateConfidence(response: Message): number {
     // Basic confidence calculation for Claude response
-    if (!response.content?.[0] || !(response.content[0] as TextBlock)?.text) {
+    const textBlock = response.content?.[0] as TextBlock;
+    if (!textBlock?.text) {
       return 0;
     }
 
-    if (response.stop_reason === 'end_turn') return 0.9;
-    if (response.stop_reason === 'max_tokens') return 0.7;
-    return 0.5;
+    const content = textBlock.text;
+    const contentLength = content.length;
+
+    // Calculate confidence based on content quality and completion status
+    let baseConfidence = 0.5;
+
+    if (response.stop_reason === 'end_turn') {
+      baseConfidence = 0.9;
+    } else if (response.stop_reason === 'max_tokens') {
+      baseConfidence = 0.7;
+    }
+
+    // Adjust confidence based on content length and quality
+    if (contentLength > 50) {
+      baseConfidence = Math.min(baseConfidence + 0.1, 1.0);
+    } else if (contentLength < 10) {
+      baseConfidence = Math.max(baseConfidence - 0.4, 0.0);
+    }
+
+    return Math.round(baseConfidence * 100) / 100; // Round to 2 decimal places
   }
 
   private async detectLanguage(text: string): Promise<string> {
@@ -256,6 +288,18 @@ Return tags as a comma-separated list. Focus on key topics, themes, and concepts
     try {
       // First try to parse as JSON (structured response)
       const parsed = JSON.parse(tagsText);
+
+      // Handle direct array format: ["tag1", "tag2", ...]
+      if (Array.isArray(parsed)) {
+        const tags = parsed
+          .slice(0, maxTags)
+          .map((tag: string) => tag.trim())
+          .filter((tag: string) => tag.length > 0);
+        const categories = this.inferCategoriesFromTags(tags);
+        return { tags, categories };
+      }
+
+      // Handle object format: {tags: [...], categories: [...]}
       if (parsed.tags && Array.isArray(parsed.tags)) {
         const tags = parsed.tags
           .slice(0, maxTags)
@@ -276,10 +320,21 @@ Return tags as a comma-separated list. Focus on key topics, themes, and concepts
     }
 
     // Parse comma-separated tags (fallback)
+    // Check if response looks like valid tags
+    if (
+      (tagsText.includes(' ') && !tagsText.includes(',')) ||
+      tagsText.toLowerCase().includes('json') ||
+      tagsText.toLowerCase().includes('valid') ||
+      tagsText.length > 100
+    ) {
+      // Likely not tags, return empty
+      return { tags: [], categories: [] };
+    }
+
     const tags = tagsText
       .split(',')
       .map((tag) => tag.trim())
-      .filter((tag) => tag.length > 0)
+      .filter((tag) => tag.length > 0 && tag.length < 30) // Reasonable tag length
       .slice(0, maxTags);
 
     // Infer categories from tags

@@ -58,13 +58,20 @@ export class CostTracker {
   }
 
   async checkBudget(operation: string, userId?: string): Promise<void> {
+    // Input validation
+    if (!operation?.trim()) {
+      throw new Error('Operation is required for budget checking');
+    }
+
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
     const currentDay = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
     // Check monthly budget
     const monthlySpend = await this.storage.getSpend(`monthly:${currentMonth}`);
     if (monthlySpend >= this.limits.monthlyBudget) {
-      const error = new Error('Monthly budget exceeded') as BudgetExceededError;
+      const error = new Error(
+        `Monthly budget of $${this.limits.monthlyBudget} exceeded. Current spend: $${monthlySpend.toFixed(2)}`
+      ) as BudgetExceededError;
       error.name = 'BudgetExceededError';
       throw error;
     }
@@ -72,18 +79,22 @@ export class CostTracker {
     // Check daily budget
     const dailySpend = await this.storage.getSpend(`daily:${currentDay}`);
     if (dailySpend >= this.limits.dailyBudget) {
-      const error = new Error('Daily budget exceeded') as BudgetExceededError;
+      const error = new Error(
+        `Daily budget of $${this.limits.dailyBudget} exceeded. Current spend: $${dailySpend.toFixed(2)}`
+      ) as BudgetExceededError;
       error.name = 'BudgetExceededError';
       throw error;
     }
 
     // Check user budget (if user ID provided)
-    if (userId) {
+    if (userId?.trim()) {
       const userSpend = await this.storage.getSpend(
         `user:${userId}:${currentMonth}`
       );
       if (userSpend >= this.limits.userBudget) {
-        const error = new Error('User budget exceeded') as BudgetExceededError;
+        const error = new Error(
+          `User budget of $${this.limits.userBudget} exceeded for user ${userId}. Current spend: $${userSpend.toFixed(2)}`
+        ) as BudgetExceededError;
         error.name = 'BudgetExceededError';
         throw error;
       }

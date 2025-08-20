@@ -46,6 +46,15 @@ export class RateLimitService {
   }
 
   async checkRateLimit(identifier: string, operation: string): Promise<void> {
+    // Input validation
+    if (!identifier?.trim()) {
+      throw new Error('Identifier is required for rate limiting');
+    }
+
+    if (!operation?.trim()) {
+      throw new Error('Operation is required for rate limiting');
+    }
+
     const rule = this.rules.get(operation);
     if (!rule) {
       // No rate limit rule defined for this operation
@@ -64,7 +73,7 @@ export class RateLimitService {
 
     if (currentRequests >= rule.maxRequests) {
       const error = new Error(
-        `Rate limit exceeded for ${operation}`
+        `Rate limit exceeded for ${operation}. Maximum ${rule.maxRequests} requests per ${rule.windowMs}ms`
       ) as RateLimitExceededError;
       error.name = 'RateLimitExceededError';
       throw error;

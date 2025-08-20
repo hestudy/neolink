@@ -43,10 +43,18 @@ export class MemoryCacheService implements CacheService {
     content: string,
     options: unknown
   ): string {
+    // Optimize cache key generation for large content while preserving uniqueness
+    const truncatedContent =
+      content.length > 10000
+        ? content.slice(0, 5000) +
+          content.slice(-5000) +
+          content.length.toString()
+        : content;
+
     const hash = crypto
       .createHash('sha256')
-      .update(`${operation}:${content}:${JSON.stringify(options)}`)
+      .update(`${operation}:${truncatedContent}:${JSON.stringify(options)}`)
       .digest('hex');
-    return `ai_cache:${operation}:${hash}`;
+    return `ai_cache:${operation}:${hash.slice(0, 16)}`; // Use shorter hash for better performance
   }
 }

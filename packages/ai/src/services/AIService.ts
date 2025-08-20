@@ -95,7 +95,7 @@ export class AIService {
     );
 
     // Record usage for cost tracking
-    if (this.costTracker && result.tokensUsed) {
+    if (this.costTracker && result && result.tokensUsed) {
       const providerInstance = this.providers.get(provider);
       let cost = 0;
 
@@ -156,7 +156,7 @@ export class AIService {
     );
 
     // Record usage for cost tracking
-    if (this.costTracker && result.tokensUsed) {
+    if (this.costTracker && result && result.tokensUsed) {
       const providerInstance = this.providers.get(provider);
       let cost = 0;
 
