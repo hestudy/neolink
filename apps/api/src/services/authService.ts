@@ -2,7 +2,7 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { eq, and } from 'drizzle-orm';
 import { db } from '@neolink/database';
-import { users } from '@neolink/database/src/schema';
+import { users } from '@neolink/database';
 import { generateTokenPair } from '../utils/jwt';
 import type { UserContext } from '@neolink/shared';
 
