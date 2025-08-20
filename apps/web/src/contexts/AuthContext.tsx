@@ -10,7 +10,13 @@ interface AuthContextType {
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
   register: (email: string, password: string, name?: string) => Promise<void>;
   logout: () => Promise<void>;
-  refreshToken: () => Promise<void>;
+  refreshToken: () => Promise<{
+    user: UserContext;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    tokenType: string;
+  }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
