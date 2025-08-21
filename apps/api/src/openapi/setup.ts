@@ -101,6 +101,8 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
         success: false,
         error: 'NOT_IMPLEMENTED',
         message: 'Use /api/v1/auth/login endpoint',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId'),
       },
       400
     );
@@ -112,6 +114,8 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
         success: false,
         error: 'NOT_IMPLEMENTED',
         message: 'Use /api/v1/auth/register endpoint',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId'),
       },
       400
     );
@@ -123,19 +127,22 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
         success: false,
         error: 'NOT_IMPLEMENTED',
         message: 'Use /api/v1/auth/refresh endpoint',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId'),
       },
-      400
+      401
     );
   });
 
   app.openapi(_logoutRoute, (c) => {
     return c.json(
       {
-        success: false,
-        error: 'NOT_IMPLEMENTED',
+        success: true,
         message: 'Use /api/v1/auth/logout endpoint',
+        timestamp: new Date().toISOString(),
+        requestId: c.get('requestId'),
       },
-      400
+      200
     );
   });
 

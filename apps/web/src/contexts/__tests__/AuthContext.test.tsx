@@ -94,9 +94,8 @@ describe('AuthContext', () => {
     const mockUser: UserContext = {
       id: '1',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'Test User',
       isActive: true,
-      emailVerified: true,
       role: 'user',
     };
 
@@ -147,9 +146,8 @@ describe('AuthContext', () => {
     const mockUser: UserContext = {
       id: '1',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'Test User',
       isActive: true,
-      emailVerified: true,
       role: 'user',
     };
 
@@ -236,9 +234,8 @@ describe('AuthContext', () => {
     const mockUser: UserContext = {
       id: '1',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'Test User',
       isActive: true,
-      emailVerified: false,
       role: 'user',
     };
 
@@ -281,9 +278,8 @@ describe('AuthContext', () => {
     const mockUser: UserContext = {
       id: '1',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'Test User',
       isActive: true,
-      emailVerified: true,
       role: 'user',
     };
 
@@ -346,9 +342,8 @@ describe('AuthContext', () => {
     const mockUser: UserContext = {
       id: '1',
       email: 'test@example.com',
-      name: 'Test User',
+      username: 'Test User',
       isActive: true,
-      emailVerified: true,
       role: 'user',
     };
 
