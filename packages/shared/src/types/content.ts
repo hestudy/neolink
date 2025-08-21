@@ -95,3 +95,111 @@ export class BrowserError extends ContentExtractionError {
     super(message, 'BROWSER_ERROR', originalError);
   }
 }
+
+// New types for enhanced content extraction
+
+export interface ReadableContent {
+  title: string;
+  byline: string;
+  content: string;
+  textContent: string;
+  excerpt: string;
+  siteName: string;
+  language: LanguageInfo;
+  length: number;
+  structuredData: StructuredData;
+  extractedAt: Date;
+}
+
+export interface LanguageInfo {
+  code: string;
+  name: string;
+  confidence: number;
+}
+
+export interface StructuredData {
+  headings: Heading[];
+  lists: List[];
+  tables: Table[];
+  images: Image[];
+}
+
+export interface Heading {
+  level: number;
+  text: string;
+}
+
+export interface List {
+  type: 'ul' | 'ol';
+  items: string[];
+}
+
+export interface Table {
+  rows: string[][];
+}
+
+export interface Image {
+  src: string;
+  alt: string;
+}
+
+export interface OptimizedContent {
+  content: string;
+  truncated: boolean;
+  originalLength: number;
+  optimizedLength: number;
+  preservedElements: {
+    title: string;
+    headings: Heading[];
+    importantParagraphs: string[];
+  };
+  truncationRatio?: number;
+}
+
+export interface EnhancedMetadata {
+  basic: {
+    title: string;
+    description: string;
+    author: string;
+    keywords: string;
+  };
+  structuredData: Record<string, unknown>[];
+  openGraph: {
+    title?: string;
+    description?: string;
+    image?: string;
+    url?: string;
+    type?: string;
+    siteName?: string;
+  };
+  twitterCard: {
+    card?: string;
+    title?: string;
+    description?: string;
+    image?: string;
+  };
+  timeInfo: {
+    published?: string;
+    modified?: string;
+  };
+}
+
+export enum ExtractionErrorCode {
+  READABILITY_FAILED = 'READABILITY_FAILED',
+  HTML_PARSE_FAILED = 'HTML_PARSE_FAILED',
+  CONTENT_TOO_SHORT = 'CONTENT_TOO_SHORT',
+  NETWORK_ERROR = 'NETWORK_ERROR',
+  TIMEOUT = 'TIMEOUT',
+  LANGUAGE_DETECTION_FAILED = 'LANGUAGE_DETECTION_FAILED',
+}
+
+export class ExtractionError extends Error {
+  constructor(
+    message: string,
+    public readonly code: ExtractionErrorCode,
+    public readonly originalError?: Error
+  ) {
+    super(message);
+    this.name = 'ExtractionError';
+  }
+}

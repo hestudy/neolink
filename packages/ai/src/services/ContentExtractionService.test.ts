@@ -9,6 +9,62 @@ vi.mock('puppeteer', () => ({
   },
 }));
 
+// Mock ReadabilityService
+vi.mock('./ReadabilityService', () => ({
+  ReadabilityService: vi.fn().mockImplementation(() => ({
+    extractArticleContent: vi.fn().mockResolvedValue({
+      title: 'Test Page', // Match the expected title in tests
+      byline: 'Test Author',
+      content: '<p>Test content</p>',
+      textContent: 'Test content',
+      excerpt: 'Test description',
+      siteName: 'Test Site',
+      language: { code: 'en', name: 'English', confidence: 0.9 },
+      length: 100,
+      structuredData: {
+        headings: [],
+        lists: [],
+        tables: [],
+        images: [],
+      },
+      extractedAt: expect.any(Date),
+    }),
+  })),
+}));
+
+// Mock MetadataExtractionService
+vi.mock('./MetadataExtractionService', () => ({
+  MetadataExtractionService: vi.fn().mockImplementation(() => ({
+    extractEnhancedMetadata: vi.fn().mockResolvedValue({
+      basic: {
+        title: 'Test Page',
+        description: 'Test description',
+        author: 'Test Author',
+        keywords: 'test, keywords',
+      },
+      openGraph: {
+        title: 'OG Title',
+        description: 'OG Description',
+        image: 'https://example.com/image.jpg',
+        url: 'https://example.com',
+        type: 'article',
+        siteName: 'Test Site',
+      },
+      twitterCard: {
+        card: 'summary',
+        title: 'Twitter Title',
+        description: 'Twitter Description',
+        image: 'https://example.com/twitter-image.jpg',
+      },
+      structuredData: [],
+      timeInfo: {
+        published: '2023-01-01T00:00:00Z',
+        modified: '2023-01-02T00:00:00Z',
+      },
+    }),
+  })),
+}));
+
 // Mock fetch for fallback tests
 global.fetch = vi.fn();
 
@@ -21,6 +77,7 @@ interface MockPage {
   on: Mock;
   goto: Mock;
   evaluate: Mock;
+  content: Mock;
   screenshot: Mock;
   close: Mock;
 }
@@ -55,6 +112,11 @@ describe('ContentExtractionService', () => {
       on: vi.fn(),
       goto: vi.fn(),
       evaluate: vi.fn(),
+      content: vi
+        .fn()
+        .mockResolvedValue(
+          '<html><head><title>Test</title></head><body><p>Test content</p></body></html>'
+        ),
       screenshot: vi.fn(),
       close: vi.fn(),
     };

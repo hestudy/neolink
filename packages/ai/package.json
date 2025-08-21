@@ -24,12 +24,17 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.60.0",
+    "@mozilla/readability": "^0.4.4",
     "@neolink/shared": "workspace:*",
+    "franc": "^6.1.0",
+    "jsdom": "^24.0.0",
+    "language-detect": "^1.1.0",
     "openai": "^5.12.2",
     "puppeteer": "^24.16.2"
   },
   "devDependencies": {
     "@neolink/config": "workspace:*",
+    "@types/jsdom": "^21.1.6",
     "@types/node": "^20.10.0",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
