@@ -3,6 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi } from 'vitest';
 import RegisterPage from '../page';
 
+// Create a wrapper component that provides necessary context
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  return <div>{children}</div>;
+};
+
 // Mock Next.js modules
 vi.mock('next/navigation', () => ({
   useRouter: () => ({
@@ -38,7 +43,11 @@ describe('RegisterPage', () => {
   });
 
   it('should render register form with all required fields', () => {
-    render(<RegisterPage />);
+    render(
+      <TestWrapper>
+        <RegisterPage />
+      </TestWrapper>
+    );
 
     expect(screen.getByText('注册 NeoLink')).toBeInTheDocument();
     expect(

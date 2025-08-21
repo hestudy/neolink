@@ -8,36 +8,47 @@ import {
 } from '../src/connection';
 
 describe('Database Connection Tests', () => {
+  let isDatabaseAvailable = false;
+
   beforeAll(async () => {
     // Quick check for database availability with minimal retry
     console.log('Waiting for database connection...');
-    const connected = await connectWithRetry(2, 500); // Only 2 attempts, 500ms delay
-    if (!connected) {
-      console.warn('Database not available for tests');
+    isDatabaseAvailable = await connectWithRetry(2, 500); // Only 2 attempts, 500ms delay
+    if (!isDatabaseAvailable) {
+      console.warn(
+        'Database not available for tests - skipping database-dependent tests'
+      );
     }
   });
 
   it('should connect to database', async () => {
-    const isConnected = await checkDatabaseConnection();
-    expect(typeof isConnected).toBe('boolean');
-
-    if (isConnected) {
-      console.log('✅ Database connection successful');
-    } else {
-      console.log('⚠️ Database connection failed (expected if DB not running)');
+    if (!isDatabaseAvailable) {
+      console.log(
+        '⚠️ Skipping database connection test - database not available'
+      );
+      return;
     }
+
+    const isConnected = await checkDatabaseConnection();
+    expect(isConnected).toBe(true);
+    console.log('✅ Database connection successful');
   });
 
   it('should check pgvector extension', async () => {
+    if (!isDatabaseAvailable) {
+      console.log(
+        '⚠️ Skipping pgvector extension test - database not available'
+      );
+      return;
+    }
+
     const hasPgVector = await checkPgVectorExtension();
     expect(typeof hasPgVector).toBe('boolean');
 
     if (hasPgVector) {
       console.log('✅ pgvector extension is available');
     } else {
-      console.log(
-        '⚠️ pgvector extension not available (expected if DB not running)'
-      );
+      console.log('⚠️ pgvector extension not available');
     }
   });
 

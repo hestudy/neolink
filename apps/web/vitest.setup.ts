@@ -4,12 +4,7 @@ import { cleanup } from '@testing-library/react';
 import * as React from 'react';
 
 // Configure React for testing environment
-if (process.env.NODE_ENV !== 'test') {
-  Object.defineProperty(process.env, 'NODE_ENV', {
-    value: 'test',
-    writable: true,
-  });
-}
+process.env.NODE_ENV = 'test';
 
 // Make React available globally
 (globalThis as any).React = React;

@@ -13,6 +13,8 @@ export default defineConfig({
       'src/components/dialogs/EditBookmarkDialog.test.tsx',
       'src/components/dialogs/AddBookmarkDialog.test.tsx',
       'src/components/dialogs/DeleteConfirmDialog.test.tsx',
+      'src/app/(auth)/register/__tests__/page.test.tsx',
+      'src/app/(auth)/login/__tests__/page.test.tsx',
     ],
     setupFiles: ['./vitest.setup.ts'],
     testTimeout: 30000,
