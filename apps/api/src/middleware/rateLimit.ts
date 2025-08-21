@@ -41,6 +41,12 @@ export const RATE_LIMIT_TIERS = {
     maxRequests: 5,
     message: 'Too many authentication attempts, please try again later',
   },
+  // Token刷新：每15分钟20个请求
+  refresh: {
+    windowMs: 15 * 60 * 1000, // 15分钟
+    maxRequests: 20,
+    message: 'Too many token refresh attempts, please try again later',
+  },
 } as const;
 
 /**
@@ -210,6 +216,7 @@ export const rateLimiters = {
   authenticated: createRateLimit('authenticated'),
   strict: createRateLimit('strict'),
   auth: createRateLimit('auth'),
+  refresh: createRateLimit('refresh'),
 };
 
 /**

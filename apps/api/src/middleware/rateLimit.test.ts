@@ -207,4 +207,20 @@ describe('Rate Limit Middleware', () => {
     expect(res1.status).toBe(200);
     expect(res2.status).toBe(200);
   });
+
+  it('should apply refresh rate limit correctly', async () => {
+    app.use('/refresh', createRateLimit('refresh'));
+    app.post('/refresh', (c) => c.json({ message: 'token refreshed' }));
+
+    const res = await app.request('/refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refreshToken: 'test-token' }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get('X-RateLimit-Limit')).toBe('20'); // 15分钟内20次
+    const resetHeader = res.headers.get('X-RateLimit-Reset');
+    expect(resetHeader).toBeDefined();
+  });
 });

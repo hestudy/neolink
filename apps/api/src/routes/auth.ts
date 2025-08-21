@@ -40,7 +40,7 @@ authRoute.use('/login', rateLimiters.auth);
 authRoute.use('/register', rateLimiters.auth);
 authRoute.use('/forgot-password', rateLimiters.auth);
 authRoute.use('/reset-password', rateLimiters.auth);
-authRoute.use('/refresh', rateLimiters.auth);
+authRoute.use('/refresh', rateLimiters.refresh);
 
 // 为需要认证的端点应用认证用户的速率限制
 authRoute.use('/me', rateLimiters.authenticated);
