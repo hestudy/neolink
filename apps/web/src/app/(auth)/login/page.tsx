@@ -53,7 +53,7 @@ export default function LoginPage() {
     try {
       await login(data.email, data.password, data.remember);
       showSuccess('登录成功');
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       console.error('Login error:', error);
       const errorMessage =

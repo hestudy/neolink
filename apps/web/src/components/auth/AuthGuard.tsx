@@ -33,8 +33,8 @@ export function AuthGuard({
       // 需要认证但未认证，重定向到登录页
       router.push(redirectTo);
     } else if (!requireAuth && isAuthenticated) {
-      // 不需要认证但已认证（如访问登录页时），重定向到dashboard
-      router.push('/dashboard');
+      // 不需要认证但已认证（如访问登录页时），重定向到首页
+      router.push('/');
     }
   }, [isAuthenticated, isLoading, requireAuth, redirectTo, router]);
 

@@ -8,6 +8,11 @@ import {
 } from '@neolink/shared/schemas';
 import { z } from 'zod';
 
+// URL预览请求schema
+const URLPreviewSchema = z.object({
+  url: z.string().url('无效的URL格式'),
+});
+
 export const bookmarksRoute = new Hono();
 
 // 所有书签路由都需要认证
@@ -443,6 +448,103 @@ bookmarksRoute.post('/:id/unarchive', async (c) => {
         success: false,
         error: 'Internal Server Error',
         message: '取消归档书签失败',
+      },
+      500
+    );
+  }
+});
+
+/**
+ * POST /bookmarks/preview - 获取URL预览信息
+ */
+bookmarksRoute.post('/preview', async (c) => {
+  try {
+    const user = c.get('user');
+    if (!user) {
+      return c.json({ error: 'Unauthorized' }, 401);
+    }
+
+    const body = await c.req.json();
+
+    // 验证输入数据
+    const validation = URLPreviewSchema.safeParse(body);
+    if (!validation.success) {
+      return c.json(
+        {
+          success: false,
+          error: 'Validation Error',
+          details: validation.error.issues,
+        },
+        400
+      );
+    }
+
+    const { url } = validation.data;
+
+    try {
+      // 简单的网页元数据提取
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'User-Agent': 'NeoLink-Bot/1.0',
+        },
+        signal: AbortSignal.timeout(10000), // 10秒超时
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const html = await response.text();
+
+      // 简单的HTML解析提取标题和描述
+      const titleMatch = html.match(/<title[^>]*>([^<]*)<\/title>/i);
+      const descriptionMatch =
+        html.match(
+          /<meta[^>]*name=["']description["'][^>]*content=["']([^"']*)["']/i
+        ) ||
+        html.match(
+          /<meta[^>]*content=["']([^"']*)["'][^>]*name=["']description["']/i
+        );
+
+      const title = titleMatch
+        ? titleMatch[1].trim()
+        : `来自 ${new URL(url).hostname} 的页面`;
+      const description = descriptionMatch ? descriptionMatch[1].trim() : '';
+
+      return c.json({
+        success: true,
+        data: {
+          title,
+          description,
+          url,
+          domain: new URL(url).hostname,
+        },
+        message: '网页信息提取成功',
+      });
+    } catch (fetchError) {
+      console.error('URL fetch error:', fetchError);
+
+      // 如果提取失败，返回基础信息
+      const parsedUrl = new URL(url);
+      return c.json({
+        success: true,
+        data: {
+          title: `来自 ${parsedUrl.hostname} 的页面`,
+          description: '',
+          url,
+          domain: parsedUrl.hostname,
+        },
+        message: '网页信息提取成功（使用默认信息）',
+      });
+    }
+  } catch (error) {
+    console.error('Preview error:', error);
+    return c.json(
+      {
+        success: false,
+        error: 'Internal Server Error',
+        message: '获取网页预览失败',
       },
       500
     );

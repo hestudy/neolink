@@ -93,58 +93,8 @@ export function setupOpenAPIRoutes(app: OpenAPIHono) {
     });
   });
 
-  // 认证路由的OpenAPI定义（用于文档生成）
-  // 注意：实际的认证逻辑在 routes/auth.ts 中实现
-  app.openapi(_loginRoute, (c) => {
-    return c.json(
-      {
-        success: false,
-        error: 'NOT_IMPLEMENTED',
-        message: 'Use /api/v1/auth/login endpoint',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId'),
-      },
-      400
-    );
-  });
-
-  app.openapi(_registerRoute, (c) => {
-    return c.json(
-      {
-        success: false,
-        error: 'NOT_IMPLEMENTED',
-        message: 'Use /api/v1/auth/register endpoint',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId'),
-      },
-      400
-    );
-  });
-
-  app.openapi(_refreshTokenRoute, (c) => {
-    return c.json(
-      {
-        success: false,
-        error: 'NOT_IMPLEMENTED',
-        message: 'Use /api/v1/auth/refresh endpoint',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId'),
-      },
-      401
-    );
-  });
-
-  app.openapi(_logoutRoute, (c) => {
-    return c.json(
-      {
-        success: true,
-        message: 'Use /api/v1/auth/logout endpoint',
-        timestamp: new Date().toISOString(),
-        requestId: c.get('requestId'),
-      },
-      200
-    );
-  });
+  // 认证路由的OpenAPI定义仅用于文档生成
+  // 实际的认证逻辑在 routes/auth.ts 中实现，这里不添加处理器
 
   console.log('✅ OpenAPI routes configured');
 }

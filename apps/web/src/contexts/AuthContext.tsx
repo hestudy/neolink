@@ -39,7 +39,7 @@ interface AuthProviderProps {
 }
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api/v1';
+  (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000') + '/api/v1';
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<UserContext | null>(null);
@@ -50,12 +50,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   // 从本地存储获取令牌
   const getStoredTokens = () => {
-    if (typeof window === 'undefined')
+    if (typeof window === 'undefined') {
+      console.log('Server side, no tokens available'); // 调试日志
       return { accessToken: null, refreshToken: null };
+    }
+
+    const accessToken = localStorage.getItem('access_token');
+    const refreshToken =
+      localStorage.getItem('refresh_token') ||
+      sessionStorage.getItem('refresh_token');
+
+    console.log('Getting stored tokens:', {
+      hasAccessToken: !!accessToken,
+      hasRefreshToken: !!refreshToken,
+    }); // 调试日志
 
     return {
-      accessToken: localStorage.getItem('access_token'),
-      refreshToken: localStorage.getItem('refresh_token'),
+      accessToken,
+      refreshToken,
     };
   };
 
@@ -67,12 +79,17 @@ export function AuthProvider({ children }: AuthProviderProps) {
   ) => {
     if (typeof window === 'undefined') return;
 
+    console.log('Storing tokens:', { remember }); // 调试日志
     localStorage.setItem('access_token', accessToken);
 
     if (remember) {
       localStorage.setItem('refresh_token', refreshToken);
+      console.log('Tokens stored in localStorage'); // 调试日志
     } else {
       sessionStorage.setItem('refresh_token', refreshToken);
+      console.log(
+        'Access token in localStorage, refresh token in sessionStorage'
+      ); // 调试日志
     }
   };
 
@@ -250,17 +267,25 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 初始化认证状态
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('Auth initialization started'); // 调试日志
       const { accessToken } = getStoredTokens();
+      console.log('Stored token exists:', !!accessToken); // 调试日志
 
       if (!accessToken) {
+        console.log('No access token found, setting not authenticated'); // 调试日志
         setIsLoading(false);
         return;
       }
 
       try {
+        console.log('Getting current user with token'); // 调试日志
         await getCurrentUser();
+        console.log('User loaded successfully'); // 调试日志
       } catch (error) {
         console.error('Auth initialization error:', error);
+        // 如果token无效，清除它
+        clearTokens();
+        setUser(null);
       } finally {
         setIsLoading(false);
       }

@@ -41,21 +41,17 @@ const LoginRequestSchema = z
  */
 const RegisterRequestSchema = z
   .object({
-    username: z.string().min(3).max(50).openapi({
-      example: 'john_doe',
-      description: '用户名，3-50个字符',
-    }),
     email: z.string().email().openapi({
       example: 'john@example.com',
       description: '邮箱地址',
     }),
-    password: z.string().min(6).openapi({
+    password: z.string().min(8).openapi({
       example: 'password123',
-      description: '密码，至少6个字符',
+      description: '密码，至少8个字符',
     }),
-    confirmPassword: z.string().min(6).openapi({
-      example: 'password123',
-      description: '确认密码',
+    name: z.string().min(1).optional().openapi({
+      example: 'John Doe',
+      description: '用户姓名（可选）',
     }),
   })
   .openapi('RegisterRequest');
@@ -105,7 +101,7 @@ const RefreshTokenRequestSchema = z
  */
 export const loginRoute = createRoute({
   method: 'post',
-  path: '/api/v1/auth/login',
+  path: '/auth/login',
   tags: ['Authentication'],
   summary: '用户登录',
   description: '使用用户名/邮箱和密码进行登录认证',
@@ -161,7 +157,7 @@ export const loginRoute = createRoute({
  */
 export const registerRoute = createRoute({
   method: 'post',
-  path: '/api/v1/auth/register',
+  path: '/auth/register',
   tags: ['Authentication'],
   summary: '用户注册',
   description: '创建新的用户账户',
@@ -217,7 +213,7 @@ export const registerRoute = createRoute({
  */
 export const refreshTokenRoute = createRoute({
   method: 'post',
-  path: '/api/v1/auth/refresh',
+  path: '/auth/refresh',
   tags: ['Authentication'],
   summary: '刷新访问令牌',
   description: '使用刷新令牌获取新的访问令牌',
@@ -257,7 +253,7 @@ export const refreshTokenRoute = createRoute({
  */
 export const logoutRoute = createRoute({
   method: 'post',
-  path: '/api/v1/auth/logout',
+  path: '/auth/logout',
   tags: ['Authentication'],
   summary: '用户登出',
   description: '注销当前用户会话，使令牌失效',
@@ -287,7 +283,7 @@ export const logoutRoute = createRoute({
  */
 export const getCurrentUserRoute = createRoute({
   method: 'get',
-  path: '/api/v1/auth/me',
+  path: '/auth/me',
   tags: ['Authentication'],
   summary: '获取当前用户信息',
   description: '获取当前认证用户的详细信息',

@@ -60,7 +60,7 @@ export default function RegisterPage() {
     try {
       await register(data.email, data.password, data.name);
       showSuccess('注册成功，欢迎使用 NeoLink！');
-      router.push('/dashboard');
+      router.push('/');
     } catch (error) {
       console.error('Registration error:', error);
       const errorMessage =

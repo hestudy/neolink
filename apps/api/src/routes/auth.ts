@@ -3,7 +3,6 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { authMiddleware } from '../middleware/auth';
 import { rateLimiters } from '../middleware/rateLimit';
-import { getCurrentUserRoute } from '../openapi/routes/auth';
 import { authService } from '../services/authService';
 import { tokenBlacklistService } from '../services/tokenBlacklistService';
 import { verifyRefreshToken, extractTokenFromHeader } from '../utils/jwt';
@@ -334,7 +333,7 @@ authRoute.post(
 );
 
 // 获取当前用户信息（需要认证）
-authRoute.openapi(getCurrentUserRoute, async (c) => {
+authRoute.get('/me', authMiddleware(), async (c) => {
   const user = c.get('user') as
     | { id: string; email: string; username: string; role: string }
     | undefined;

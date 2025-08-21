@@ -29,6 +29,7 @@ import {
   CreateBookmarkInput,
 } from '@/lib/validations/bookmark';
 import { showSuccess, showError, showLoading } from '@/lib/toast';
+import toast from 'react-hot-toast';
 import { api } from '@/lib/api-client';
 import { debounce } from '@/lib/utils/debounce';
 
@@ -72,28 +73,34 @@ export function AddBookmarkDialog({
         setIsLoading(true);
         loadingToast = showLoading('正在提取网页信息...');
 
-        // 这里应该调用 API 来提取网页信息
-        // 暂时使用模拟数据
-        setTimeout(() => {
-          const mockData = {
-            title: `来自 ${new URL(url).hostname} 的页面`,
-            description: '自动提取的页面描述信息',
-          };
+        // 调用真实的API来提取网页信息
+        const extractedInfo = await api.bookmarks.preview(url);
 
-          setExtractedData(mockData);
+        setExtractedData({
+          title: extractedInfo.title,
+          description: extractedInfo.description,
+        });
 
-          if (!form.getValues('title')) {
-            form.setValue('title', mockData.title);
-          }
-          if (!form.getValues('description')) {
-            form.setValue('description', mockData.description);
-          }
+        if (!form.getValues('title')) {
+          form.setValue('title', extractedInfo.title);
+        }
+        if (!form.getValues('description')) {
+          form.setValue('description', extractedInfo.description);
+        }
 
-          showSuccess('网页信息提取成功');
-          setIsLoading(false);
-        }, 1000);
+        // 清除loading toast并显示成功消息
+        if (loadingToast) {
+          toast.dismiss(loadingToast);
+        }
+        showSuccess('网页信息提取成功');
       } catch (error) {
+        // 清除loading toast并显示错误消息
+        if (loadingToast) {
+          toast.dismiss(loadingToast);
+        }
         showError('提取网页信息失败');
+        console.error('URL extraction error:', error);
+      } finally {
         setIsLoading(false);
       }
     },
@@ -146,18 +153,28 @@ export function AddBookmarkDialog({
   };
 
   const onSubmit = async (data: CreateBookmarkInput) => {
+    let loadingToast: string | undefined;
+
     try {
       setIsLoading(true);
-      const loadingToast = showLoading('正在添加书签...');
+      loadingToast = showLoading('正在添加书签...');
 
       await createBookmark(data);
 
+      // 清除loading toast并显示成功消息
+      if (loadingToast) {
+        toast.dismiss(loadingToast);
+      }
       showSuccess('书签添加成功');
       onOpenChange(false);
       form.reset();
       setExtractedData(null);
       setTagInput('');
     } catch (error: any) {
+      // 清除loading toast并显示错误消息
+      if (loadingToast) {
+        toast.dismiss(loadingToast);
+      }
       showError(error.message || '添加书签失败');
     } finally {
       setIsLoading(false);

@@ -3,7 +3,7 @@ const API_BASE_URL = 'http://localhost:8000/api/v1';
 
 const getAuthToken = () => {
   if (typeof window !== 'undefined') {
-    return localStorage.getItem('authToken');
+    return localStorage.getItem('access_token');
   }
   return null;
 };
@@ -78,19 +78,28 @@ export const api = {
       });
       return result;
     },
+    preview: async (url: string) => {
+      const result = await makeRequest('/bookmarks/preview', {
+        method: 'POST',
+        body: JSON.stringify({ url }),
+      });
+      return result.data;
+    },
   },
 
   // Authentication methods
   auth: {
     setToken: (token: string) => {
       if (typeof window !== 'undefined') {
-        localStorage.setItem('authToken', token);
+        localStorage.setItem('access_token', token);
       }
     },
     getToken: getAuthToken,
     clearToken: () => {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('authToken');
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        sessionStorage.removeItem('refresh_token');
       }
     },
   },
