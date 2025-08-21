@@ -105,26 +105,37 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // API请求辅助函数
   const apiRequest = async (
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestInit = {},
+    skipAuth: boolean = false
   ): Promise<AuthResponse> => {
-    const { accessToken } = getStoredTokens();
+    const { accessToken } = skipAuth
+      ? { accessToken: null }
+      : getStoredTokens();
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
-        ...options.headers,
-      },
-    });
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` }),
+          ...options.headers,
+        },
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP ${response.status}`);
+      if (!response.ok) {
+        throw new Error(data.message || `HTTP ${response.status}`);
+      }
+
+      return data;
+    } catch (error) {
+      // 网络连接错误处理
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        throw new Error('网络连接失败，请检查API服务是否启动');
+      }
+      throw error;
     }
-
-    return data;
   };
 
   // 登录函数
@@ -211,10 +222,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
 
     try {
-      const response = await apiRequest('/auth/refresh', {
-        method: 'POST',
-        body: JSON.stringify({ refreshToken: tokenToUse }),
-      });
+      const response = await apiRequest(
+        '/auth/refresh',
+        {
+          method: 'POST',
+          body: JSON.stringify({ refreshToken: tokenToUse }),
+        },
+        true
+      ); // 跳过自动添加access token
 
       if (response.success && response.data) {
         const {
@@ -242,7 +257,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   };
 
   // 获取当前用户信息
-  const getCurrentUser = async () => {
+  const getCurrentUser = async (skipRefresh: boolean = false) => {
     try {
       const response = await apiRequest('/auth/me');
 
@@ -253,9 +268,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
       }
     } catch (error) {
       console.error('Get current user error:', error);
-      // 获取用户信息失败时尝试刷新令牌
+
+      // 如果跳过刷新或者是网络错误，直接清除状态
+      if (
+        skipRefresh ||
+        (error instanceof Error && error.message.includes('网络连接失败'))
+      ) {
+        setUser(null);
+        clearTokens();
+        return;
+      }
+
+      // 获取用户信息失败时尝试刷新令牌（仅尝试一次）
       try {
-        await refreshToken();
+        const refreshResult = await refreshToken();
+        // 刷新成功后直接设置用户信息，不再重复调用getCurrentUser
+        if (refreshResult && refreshResult.user) {
+          setUser(refreshResult.user);
+        }
       } catch (refreshError) {
         console.error('Token refresh failed:', refreshError);
         setUser(null);
