@@ -4,6 +4,7 @@ import { healthRoute } from './health';
 import { examplesRoute } from './examples';
 import { authRoute } from './auth';
 import { bookmarksRoute } from './bookmarks';
+import summaryRoute from './summary';
 import { orpcHandler } from '../adapters/orpc';
 import monitoringRoute from './monitoring';
 
@@ -22,6 +23,9 @@ export function setupRoutes(app: Hono | OpenAPIHono) {
 
   // 书签路由
   apiV1.route('/bookmarks', bookmarksRoute);
+
+  // 书签摘要路由
+  apiV1.route('/bookmarks/summary', summaryRoute);
 
   // oRPC 路由 - 类型安全的API端点
   apiV1.route('/rpc', orpcHandler);

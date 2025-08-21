@@ -7,7 +7,7 @@ import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { db } from '@neolink/database/connection';
 import { bookmarks } from '@neolink/database/schema';
-import { eq, and, isNull } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { queueManager } from '../services/taskQueue';
 import { authMiddleware, getCurrentUser } from '../middleware/auth';
 
@@ -28,7 +28,7 @@ const _SummaryHistorySchema = z.object({
 
 /**
  * 为书签生成摘要
- * POST /api/bookmarks/:bookmarkId/summary/generate
+ * POST /api/v1/bookmarks/summary/:bookmarkId/generate
  */
 app.post(
   '/:bookmarkId/generate',
@@ -55,7 +55,7 @@ app.post(
           and(
             eq(bookmarks.id, bookmarkId),
             eq(bookmarks.userId, userId),
-            isNull(bookmarks.isDeleted)
+            eq(bookmarks.isDeleted, false)
           )
         )
         .limit(1);
@@ -135,7 +135,7 @@ app.post(
 
 /**
  * 获取摘要生成状态
- * GET /api/bookmarks/:bookmarkId/summary/status/:jobId
+ * GET /api/v1/bookmarks/summary/:bookmarkId/status/:jobId
  */
 app.get(
   '/:bookmarkId/status/:jobId',
@@ -209,7 +209,7 @@ app.get(
 
 /**
  * 获取书签的当前摘要
- * GET /api/bookmarks/:bookmarkId/summary
+ * GET /api/v1/bookmarks/summary/:bookmarkId
  */
 app.get(
   '/:bookmarkId',
@@ -239,7 +239,7 @@ app.get(
           and(
             eq(bookmarks.id, bookmarkId),
             eq(bookmarks.userId, userId),
-            isNull(bookmarks.isDeleted)
+            eq(bookmarks.isDeleted, false)
           )
         )
         .limit(1);
@@ -295,7 +295,7 @@ app.get(
 
 /**
  * 删除书签摘要
- * DELETE /api/bookmarks/:bookmarkId/summary
+ * DELETE /api/v1/bookmarks/summary/:bookmarkId
  */
 app.delete(
   '/:bookmarkId',
@@ -320,7 +320,7 @@ app.delete(
           and(
             eq(bookmarks.id, bookmarkId),
             eq(bookmarks.userId, userId),
-            isNull(bookmarks.isDeleted)
+            eq(bookmarks.isDeleted, false)
           )
         )
         .limit(1);
@@ -358,7 +358,7 @@ app.delete(
 
 /**
  * 批量生成摘要
- * POST /api/bookmarks/summary/batch-generate
+ * POST /api/v1/bookmarks/summary/batch-generate
  */
 app.post(
   '/batch-generate',
@@ -394,7 +394,9 @@ app.post(
           summary: bookmarks.summary,
         })
         .from(bookmarks)
-        .where(and(eq(bookmarks.userId, userId), isNull(bookmarks.isDeleted)));
+        .where(
+          and(eq(bookmarks.userId, userId), eq(bookmarks.isDeleted, false))
+        );
 
       const validBookmarks = userBookmarks.filter(
         (b) =>
