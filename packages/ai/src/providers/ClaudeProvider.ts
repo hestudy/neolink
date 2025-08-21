@@ -11,11 +11,15 @@ import type {
 import { AIError } from '../types/providers';
 import { CacheService, MemoryCacheService } from '../utils/cache';
 import { calculateClaudeCost } from '../utils/tokenCounter';
+import { SummaryPrompts } from '../prompts/SummaryPrompts';
+import { SummaryQualityValidator } from '../services/SummaryQualityValidator';
 
 export class ClaudeProvider implements AIProvider {
   private client: Anthropic;
   private config: ClaudeConfig;
   private cache: CacheService;
+  private summaryPrompts: SummaryPrompts;
+  private qualityValidator: SummaryQualityValidator;
 
   constructor(config: ClaudeConfig, cache?: CacheService) {
     this.config = config;
@@ -24,6 +28,8 @@ export class ClaudeProvider implements AIProvider {
       timeout: config.timeout,
     });
     this.cache = cache || new MemoryCacheService();
+    this.summaryPrompts = new SummaryPrompts();
+    this.qualityValidator = new SummaryQualityValidator();
   }
 
   async generateSummary(
@@ -63,7 +69,7 @@ export class ClaudeProvider implements AIProvider {
         messages: [
           {
             role: 'user',
-            content: `${this.getSummarySystemPrompt(options)}\n\nContent to summarize:\n\n${processedContent}`,
+            content: `${this.summaryPrompts.getSummarySystemPrompt(options)}\n\nContent to summarize:\n\n${processedContent}`,
           },
         ],
         temperature: 0.3,
@@ -80,7 +86,7 @@ export class ClaudeProvider implements AIProvider {
       // Detect language
       const language = await this.detectLanguage(summary);
 
-      const result: SummaryResult = {
+      const preliminaryResult: SummaryResult = {
         summary,
         confidence,
         language,
@@ -88,6 +94,19 @@ export class ClaudeProvider implements AIProvider {
           input: response.usage?.input_tokens || 0,
           output: response.usage?.output_tokens || 0,
         },
+      };
+
+      // Validate summary quality
+      const qualityValidation = await this.qualityValidator.validate(
+        content,
+        preliminaryResult,
+        options
+      );
+
+      // Use adjusted confidence from quality validation
+      const result: SummaryResult = {
+        ...preliminaryResult,
+        confidence: qualityValidation.adjustedConfidence,
       };
 
       // Cache the result
@@ -205,15 +224,6 @@ export class ClaudeProvider implements AIProvider {
     return cutPoint > maxLength * 0.8
       ? truncated.slice(0, cutPoint + 1)
       : truncated;
-  }
-
-  private getSummarySystemPrompt(options: SummaryOptions): string {
-    const language = options.language || 'English';
-    const length = options.summaryLength || 'medium';
-
-    return `You are an expert content summarizer. Create a ${length} summary of the provided content in ${language}. 
-Focus on the main points, key insights, and essential information. 
-Be concise, accurate, and maintain the original tone when possible.`;
   }
 
   private getTagsSystemPrompt(options: TagOptions): string {

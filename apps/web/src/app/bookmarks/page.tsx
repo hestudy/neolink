@@ -1,4 +1,4 @@
-import { BookmarkList } from '@/components/bookmarks/BookmarkList';
+import { EnhancedBookmarkList } from '@/components/bookmarks/EnhancedBookmarkList';
 import { AddBookmarkButton } from '@/components/bookmarks/AddBookmarkButton';
 import { ProtectedRoute } from '@/components/auth/AuthGuard';
 
@@ -11,7 +11,12 @@ export default function BookmarksPage() {
           <AddBookmarkButton />
         </div>
 
-        <BookmarkList />
+        <EnhancedBookmarkList
+          showSummaryFeatures={true}
+          enableBatchOperations={true}
+          enableSummaryFeedback={false}
+          viewMode="grid"
+        />
       </div>
     </ProtectedRoute>
   );

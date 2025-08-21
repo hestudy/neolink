@@ -13,6 +13,7 @@ import { CostTracker, MemoryCostStorage } from './CostTracker';
 import { RateLimitService, MemoryRateLimitStorage } from '../utils/rateLimit';
 import { HealthChecker } from './HealthChecker';
 import { MemoryCacheService } from '../utils/cache';
+import { SummaryFallbackService } from './SummaryFallbackService';
 
 export class AIService {
   private providers: Map<string, AIProvider>;
@@ -21,6 +22,7 @@ export class AIService {
   private costTracker?: CostTracker;
   private rateLimitService?: RateLimitService;
   private healthChecker: HealthChecker;
+  private fallbackService: SummaryFallbackService;
 
   constructor(config: AIConfig) {
     this.config = config;
@@ -62,6 +64,9 @@ export class AIService {
     // Initialize health checker
     this.healthChecker = new HealthChecker(this.providers);
 
+    // Initialize fallback service
+    this.fallbackService = new SummaryFallbackService();
+
     if (this.providers.size === 0) {
       throw new Error('No AI providers configured');
     }
@@ -70,7 +75,8 @@ export class AIService {
   async generateSummary(
     content: string,
     options: SummaryOptions = {},
-    userId?: string
+    userId?: string,
+    metadata?: { title?: string; description?: string }
   ): Promise<SummaryResult> {
     const operation = 'summary';
 
@@ -85,47 +91,90 @@ export class AIService {
       await this.costTracker.checkBudget(operation, userId);
     }
 
-    const provider =
-      options.provider || this.config.defaultProvider || 'openai';
-    const result = await this.executeWithFallback<SummaryResult>(
-      'generateSummary',
-      provider,
-      content,
-      options
-    );
+    try {
+      const provider =
+        options.provider || this.config.defaultProvider || 'openai';
+      const result = await this.executeWithFallback<SummaryResult>(
+        'generateSummary',
+        provider,
+        content,
+        options
+      );
 
-    // Record usage for cost tracking
-    if (this.costTracker && result && result.tokensUsed) {
-      const providerInstance = this.providers.get(provider);
-      let cost = 0;
+      // Record usage for cost tracking
+      if (this.costTracker && result && result.tokensUsed) {
+        const providerInstance = this.providers.get(provider);
+        let cost = 0;
 
-      if (providerInstance instanceof OpenAIProvider) {
-        cost = providerInstance.calculateCost({
-          prompt_tokens: result.tokensUsed.input,
-          completion_tokens: result.tokensUsed.output,
-        });
-      } else if (providerInstance instanceof ClaudeProvider) {
-        cost = providerInstance.calculateCost({
-          input_tokens: result.tokensUsed.input,
-          output_tokens: result.tokensUsed.output,
-        });
+        if (providerInstance instanceof OpenAIProvider) {
+          cost = providerInstance.calculateCost({
+            prompt_tokens: result.tokensUsed.input,
+            completion_tokens: result.tokensUsed.output,
+          });
+        } else if (providerInstance instanceof ClaudeProvider) {
+          cost = providerInstance.calculateCost({
+            input_tokens: result.tokensUsed.input,
+            output_tokens: result.tokensUsed.output,
+          });
+        }
+
+        await this.costTracker.recordUsage(
+          operation,
+          {
+            inputTokens: result.tokensUsed.input,
+            outputTokens: result.tokensUsed.output,
+            cost,
+            timestamp: new Date(),
+            model: provider,
+            operation,
+          },
+          userId
+        );
       }
 
-      await this.costTracker.recordUsage(
-        operation,
-        {
-          inputTokens: result.tokensUsed.input,
-          outputTokens: result.tokensUsed.output,
-          cost,
-          timestamp: new Date(),
-          model: provider,
-          operation,
-        },
-        userId
-      );
-    }
+      return result;
+    } catch (error) {
+      // Don't use fallback for budget/rate limit errors, validation errors, or if fallback is disabled
+      if (
+        (error as Error).name === 'BudgetExceededError' ||
+        (error as Error).name === 'RateLimitExceededError' ||
+        (error as Error).message.includes('validation') ||
+        !content ||
+        content.trim().length === 0 ||
+        options.disableFallback
+      ) {
+        throw error;
+      }
 
-    return result;
+      // If all AI providers failed due to service issues, use fallback service
+      console.warn(
+        'All AI providers failed for summary generation, using fallback service:',
+        (error as Error).message
+      );
+
+      return await this.fallbackService.generateFallbackSummary({
+        title: metadata?.title,
+        description: metadata?.description,
+        content,
+        language: options.language,
+        maxLength: this.getSummaryMaxLength(options.summaryLength),
+      });
+    }
+  }
+
+  /**
+   * 获取摘要最大长度
+   */
+  private getSummaryMaxLength(summaryLength?: string): number {
+    switch (summaryLength) {
+      case 'short':
+        return 150;
+      case 'long':
+        return 500;
+      case 'medium':
+      default:
+        return 300;
+    }
   }
 
   async generateTags(

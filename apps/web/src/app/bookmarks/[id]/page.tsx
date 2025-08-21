@@ -13,6 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { BookmarkDetailSummary } from '@/components/bookmarks/BookmarkDetailSummary';
 import { ArrowLeft, ExternalLink, Edit, Trash2 } from 'lucide-react';
 
 export default function BookmarkDetailPage() {
@@ -123,12 +124,14 @@ export default function BookmarkDetailPage() {
                 </div>
               )}
 
-              {bookmark.content && (
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">AI 摘要</h3>
-                  <p className="text-muted-foreground">{bookmark.content}</p>
-                </div>
-              )}
+              {/* AI 摘要详细展示 */}
+              <BookmarkDetailSummary
+                bookmarkId={bookmark.id}
+                summary={bookmark.summary}
+                summaryMetadata={bookmark.summaryMetadata}
+                processingStatus={bookmark.processingStatus}
+                className="mb-4"
+              />
             </CardContent>
           </Card>
 

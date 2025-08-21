@@ -3,6 +3,7 @@ export interface SummaryOptions {
   language?: string;
   maxLength?: number;
   provider?: 'openai' | 'claude';
+  disableFallback?: boolean; // 禁用降级服务
 }
 
 export interface SummaryResult {

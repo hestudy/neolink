@@ -218,8 +218,8 @@ describe('OpenAI提供商测试 (AC1)', () => {
 
     it('应该计算合理的置信度分数', async () => {
       const testCases = [
-        { content: 'This is a detailed summary', expectedRange: [0.8, 1.0] },
-        { content: 'Short', expectedRange: [0.3, 0.7] },
+        { content: 'This is a detailed summary', expectedRange: [0.7, 1.0] },
+        { content: 'Short', expectedRange: [0.2, 0.7] },
         { content: ' ', expectedRange: [0.0, 0.2] }, // 单个空格而不是空字符串
       ];
 

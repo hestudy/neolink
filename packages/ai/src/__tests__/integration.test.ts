@@ -162,7 +162,7 @@ describe('AI服务集成测试 - 简化版', () => {
 
       const veryLargeContent = 'x'.repeat(100001);
       await expect(
-        aiService.generateSummary(veryLargeContent)
+        aiService.generateSummary(veryLargeContent, { disableFallback: true })
       ).rejects.toThrow();
     });
   });

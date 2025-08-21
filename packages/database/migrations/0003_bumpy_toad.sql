@@ -1,0 +1,1 @@
+ALTER TABLE "bookmarks" ADD COLUMN "summary_metadata" jsonb;

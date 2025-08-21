@@ -11,18 +11,24 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ExternalLink, Edit, Trash2, Eye } from 'lucide-react';
 import { Bookmark } from '@neolink/shared/schemas';
+import { SummarySection } from './SummarySection';
+import { SummaryFeedback } from './SummaryFeedback';
 import DOMPurify from 'dompurify';
 
 interface BookmarkCardProps {
   bookmark: Bookmark;
   onEdit?: (id: string) => void;
   onDelete?: (id: string) => void;
+  showSummary?: boolean;
+  enableSummaryFeedback?: boolean;
 }
 
 export const BookmarkCard = React.memo(function BookmarkCard({
   bookmark,
   onEdit,
   onDelete,
+  showSummary = true,
+  enableSummaryFeedback = false,
 }: BookmarkCardProps) {
   const handleExternalClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -57,6 +63,30 @@ export const BookmarkCard = React.memo(function BookmarkCard({
                 {tag}
               </Badge>
             ))}
+          </div>
+        )}
+
+        {/* AI 摘要部分 */}
+        {showSummary && (
+          <div className="mb-4">
+            <SummarySection
+              bookmarkId={bookmark.id}
+              summary={bookmark.summary}
+              summaryMetadata={bookmark.summaryMetadata}
+              processingStatus={bookmark.processingStatus}
+              compact
+            />
+          </div>
+        )}
+
+        {/* 摘要反馈部分 */}
+        {enableSummaryFeedback && bookmark.summary && (
+          <div className="mb-4">
+            <SummaryFeedback
+              bookmarkId={bookmark.id}
+              summaryId={bookmark.summaryMetadata?.version?.toString()}
+              compact
+            />
           </div>
         )}
 

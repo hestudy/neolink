@@ -157,9 +157,9 @@ describe('AI服务集成测试 (多AC)', () => {
         new Error('Claude failed')
       );
 
-      await expect(aiService.generateSummary('Test content')).rejects.toThrow(
-        'All AI providers failed'
-      );
+      await expect(
+        aiService.generateSummary('Test content', { disableFallback: true })
+      ).rejects.toThrow('All AI providers failed');
 
       expect(mockOpenAIProvider.generateSummary).toHaveBeenCalled();
       expect(mockClaudeProvider.generateSummary).toHaveBeenCalled();

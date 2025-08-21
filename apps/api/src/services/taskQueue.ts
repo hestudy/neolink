@@ -453,6 +453,58 @@ export class QueueManager {
   }
 
   /**
+   * 添加摘要生成任务
+   */
+  async addSummaryGenerationJob(
+    bookmarkId: string,
+    content: string,
+    language: string,
+    userId: string,
+    metadata?: {
+      title?: string;
+      description?: string;
+    },
+    options?: {
+      summaryLength?: 'short' | 'medium' | 'long';
+      maxLength?: number;
+      provider?: 'openai' | 'claude';
+      priority?: number;
+      delay?: number;
+    }
+  ): Promise<Job> {
+    const jobData = {
+      bookmarkId,
+      content,
+      language,
+      userId,
+      metadata,
+      options: {
+        summaryLength: options?.summaryLength ?? 'medium',
+        maxLength: options?.maxLength ?? 4000,
+        provider: options?.provider,
+      },
+    };
+
+    const jobOptions: TaskJobOptions = {
+      priority: options?.priority ?? 0,
+      delay: options?.delay ?? 0,
+      attempts: 3,
+      backoff: {
+        type: 'exponential',
+        delay: 1000,
+      },
+      timeout: 30000, // 30秒超时
+    };
+
+    return await this.taskQueue.addJob(
+      'ai-summary',
+      JobType.AI_SUMMARY,
+      jobData,
+      jobOptions
+    );
+  }
+
+  /**
    * 注册工作器
    */
   registerWorker<T = unknown, R = unknown>(
@@ -514,6 +566,23 @@ export class QueueManager {
     }
 
     console.log('▶️ All queues resumed');
+  }
+
+  /**
+   * 获取任务状态
+   */
+  async getJobStatus(
+    queueName: string,
+    jobId: string
+  ): Promise<JobStatus | null> {
+    return await this.taskQueue.getJobStatus(queueName, jobId);
+  }
+
+  /**
+   * 获取任务
+   */
+  async getJob(queueName: string, jobId: string): Promise<Job<unknown> | null> {
+    return await this.taskQueue.getJob(queueName, jobId);
   }
 
   /**

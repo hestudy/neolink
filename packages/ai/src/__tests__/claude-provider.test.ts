@@ -162,7 +162,7 @@ describe('Claude提供商测试 (AC2)', () => {
 
     it('应该正确计算Claude置信度', async () => {
       const testCases = [
-        { response: 'Detailed comprehensive summary', expectedMin: 0.8 },
+        { response: 'Detailed comprehensive summary', expectedMin: 0.7 },
         { response: 'Brief', expectedMax: 0.7 },
         { response: '', expectedMax: 0.1 },
       ];

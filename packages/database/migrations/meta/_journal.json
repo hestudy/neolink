@@ -22,6 +22,13 @@
       "when": 1755683052149,
       "tag": "0002_productive_meltdown",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755761516503,
+      "tag": "0003_bumpy_toad",
+      "breakpoints": true
     }
   ]
 }

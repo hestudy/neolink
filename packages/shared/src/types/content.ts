@@ -203,3 +203,58 @@ export class ExtractionError extends Error {
     this.name = 'ExtractionError';
   }
 }
+
+// AI Summary Generation Job Types
+
+export interface SummaryGenerationJob {
+  id: string;
+  bookmarkId: string;
+  content: string;
+  language: string;
+  userId: string;
+  options: {
+    summaryLength: 'short' | 'medium' | 'long';
+    maxLength?: number;
+    provider?: 'openai' | 'claude';
+  };
+  status: JobStatus;
+  result?: SummaryGenerationResult;
+  error?: string;
+  createdAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+  attempts: number;
+  maxAttempts: number;
+}
+
+export interface SummaryGenerationResult {
+  summary: string;
+  confidence: number;
+  language: string;
+  tokensUsed: {
+    input: number;
+    output: number;
+  };
+  cost: number;
+  provider: string;
+  generatedAt: Date;
+}
+
+export enum JobStatus {
+  PENDING = 'pending',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+  CANCELLED = 'cancelled',
+}
+
+export class SummaryGenerationError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly originalError?: Error
+  ) {
+    super(message);
+    this.name = 'SummaryGenerationError';
+  }
+}

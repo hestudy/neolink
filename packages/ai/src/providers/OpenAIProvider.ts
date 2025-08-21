@@ -11,11 +11,15 @@ import type {
 import { AIError } from '../types/providers';
 import { CacheService, MemoryCacheService } from '../utils/cache';
 import { calculateOpenAICost } from '../utils/tokenCounter';
+import { SummaryPrompts } from '../prompts/SummaryPrompts';
+import { SummaryQualityValidator } from '../services/SummaryQualityValidator';
 
 export class OpenAIProvider implements AIProvider {
   private client: OpenAI;
   private config: OpenAIConfig;
   private cache: CacheService;
+  private summaryPrompts: SummaryPrompts;
+  private qualityValidator: SummaryQualityValidator;
 
   constructor(config: OpenAIConfig, cache?: CacheService) {
     this.config = config;
@@ -25,6 +29,8 @@ export class OpenAIProvider implements AIProvider {
       maxRetries: config.maxRetries,
     });
     this.cache = cache || new MemoryCacheService();
+    this.summaryPrompts = new SummaryPrompts();
+    this.qualityValidator = new SummaryQualityValidator();
   }
 
   async generateSummary(
@@ -63,7 +69,7 @@ export class OpenAIProvider implements AIProvider {
         messages: [
           {
             role: 'system',
-            content: this.getSummarySystemPrompt(options),
+            content: this.summaryPrompts.getSummarySystemPrompt(options),
           },
           {
             role: 'user',
@@ -99,7 +105,7 @@ export class OpenAIProvider implements AIProvider {
       // Detect language
       const language = await this.detectLanguage(summary);
 
-      const result: SummaryResult = {
+      const preliminaryResult: SummaryResult = {
         summary,
         confidence,
         language,
@@ -107,6 +113,19 @@ export class OpenAIProvider implements AIProvider {
           input: response.usage?.prompt_tokens || 0,
           output: response.usage?.completion_tokens || 0,
         },
+      };
+
+      // Validate summary quality
+      const qualityValidation = await this.qualityValidator.validate(
+        content,
+        preliminaryResult,
+        options
+      );
+
+      // Use adjusted confidence from quality validation
+      const result: SummaryResult = {
+        ...preliminaryResult,
+        confidence: qualityValidation.adjustedConfidence,
       };
 
       // Cache the result
@@ -231,15 +250,6 @@ export class OpenAIProvider implements AIProvider {
     return cutPoint > maxLength * 0.8
       ? truncated.slice(0, cutPoint + 1)
       : truncated;
-  }
-
-  private getSummarySystemPrompt(options: SummaryOptions): string {
-    const language = options.language || 'English';
-    const length = options.summaryLength || 'medium';
-
-    return `You are an expert content summarizer. Create a ${length} summary of the provided content in ${language}. 
-Focus on the main points, key insights, and essential information. 
-Be concise, accurate, and maintain the original tone when possible.`;
   }
 
   private getTagsSystemPrompt(options: TagOptions): string {

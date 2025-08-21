@@ -70,6 +70,7 @@ export const bookmarks = pgTable(
     description: text('description'),
     content: text('content'),
     summary: text('summary'),
+    summaryMetadata: jsonb('summary_metadata'),
     favicon: text('favicon'),
     screenshot: text('screenshot'),
     tags: jsonb('tags').default([]),

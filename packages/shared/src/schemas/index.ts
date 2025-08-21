@@ -216,6 +216,22 @@ export const BookmarkSchema = z.object({
   wordCount: z.number().int().min(0).optional(), // 字数统计
   language: z.string().max(10).optional(), // 内容语言
   domain: z.string().max(100).optional(), // 域名
+  // AI 摘要相关字段
+  summary: z.string().optional(), // AI 生成的摘要
+  summaryMetadata: z
+    .object({
+      version: z.number().int().min(1).default(1),
+      provider: z.enum(['openai', 'claude']).default('openai'),
+      confidence: z.number().min(0).max(1).default(0),
+      tokensUsed: z.number().int().min(0).default(0),
+      cost: z.number().min(0).default(0),
+      language: z.string().max(10).default('zh'),
+      generatedAt: z.string(),
+    })
+    .optional(),
+  processingStatus: z
+    .enum(['pending', 'processing', 'completed', 'failed'])
+    .optional(),
   createdAt: DateTimeSchema,
   updatedAt: DateTimeSchema,
   lastAccessedAt: DateTimeSchema.optional(),
