@@ -151,7 +151,7 @@ export class BookmarkService {
       }
     }
 
-    // 准备插入数据
+    // 准备插入数据（只使用数据库中实际存在的字段）
     const insertData = {
       url: validatedData.url,
       title:

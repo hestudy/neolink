@@ -242,19 +242,13 @@ export const CreateBookmarkSchema = z.object({
   url: URLSchema,
   title: TitleSchema.optional(),
   description: DescriptionSchema,
-  folderId: UUIDSchema.optional(),
   tags: z.array(BookmarkTagSchema).max(20, '标签数量不能超过20个').optional(),
-  isPrivate: z.boolean().default(false),
-  isFavorite: z.boolean().default(false),
 });
 
 export const UpdateBookmarkSchema = z.object({
   title: TitleSchema.optional(),
   description: DescriptionSchema,
-  folderId: UUIDSchema.nullable().optional(), // 允许设置为 null 来移除文件夹
   tags: z.array(BookmarkTagSchema).max(20, '标签数量不能超过20个').optional(),
-  isPrivate: z.boolean().optional(),
-  isFavorite: z.boolean().optional(),
   isArchived: z.boolean().optional(),
 });
 
@@ -263,7 +257,6 @@ export const ListBookmarksSchema = z.object({
   limit: z.number().min(1).max(100).default(20),
   search: z.string().optional(),
   tags: z.array(z.string()).optional(),
-  folderId: UUIDSchema.optional(),
   isArchived: z.boolean().optional(),
   sortBy: z
     .enum(['createdAt', 'updatedAt', 'title', 'lastAccessedAt'])
