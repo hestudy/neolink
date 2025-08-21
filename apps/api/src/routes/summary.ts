@@ -9,6 +9,7 @@ import { db } from '@neolink/database/connection';
 import { bookmarks } from '@neolink/database/schema';
 import { eq, and, isNull } from 'drizzle-orm';
 import { queueManager } from '../services/taskQueue';
+import { authMiddleware, getCurrentUser } from '../middleware/auth';
 
 const app = new Hono();
 
@@ -31,6 +32,7 @@ const _SummaryHistorySchema = z.object({
  */
 app.post(
   '/:bookmarkId/generate',
+  authMiddleware(),
   zValidator('param', z.object({ bookmarkId: z.string().uuid() })),
   zValidator('json', GenerateSummarySchema),
   async (c) => {
@@ -38,8 +40,12 @@ app.post(
       const { bookmarkId } = c.req.valid('param');
       const { summaryLength, provider, force } = c.req.valid('json');
 
-      // TODO: 获取用户 ID，这里暂时使用硬编码
-      const userId = 'user-id'; // 从认证中获取
+      // 从认证中间件获取用户 ID
+      const user = getCurrentUser(c);
+      if (!user) {
+        return c.json({ error: 'User not authenticated' }, 401);
+      }
+      const userId = user.id;
 
       // 检查书签是否存在
       const bookmark = await db
@@ -133,6 +139,7 @@ app.post(
  */
 app.get(
   '/:bookmarkId/status/:jobId',
+  authMiddleware(),
   zValidator(
     'param',
     z.object({
@@ -206,13 +213,18 @@ app.get(
  */
 app.get(
   '/:bookmarkId',
+  authMiddleware(),
   zValidator('param', z.object({ bookmarkId: z.string().uuid() })),
   async (c) => {
     try {
       const { bookmarkId } = c.req.valid('param');
 
-      // TODO: 获取用户 ID
-      const userId = 'user-id';
+      // 从认证中间件获取用户 ID
+      const user = getCurrentUser(c);
+      if (!user) {
+        return c.json({ error: 'User not authenticated' }, 401);
+      }
+      const userId = user.id;
 
       const bookmark = await db
         .select({
@@ -287,13 +299,18 @@ app.get(
  */
 app.delete(
   '/:bookmarkId',
+  authMiddleware(),
   zValidator('param', z.object({ bookmarkId: z.string().uuid() })),
   async (c) => {
     try {
       const { bookmarkId } = c.req.valid('param');
 
-      // TODO: 获取用户 ID
-      const userId = 'user-id';
+      // 从认证中间件获取用户 ID
+      const user = getCurrentUser(c);
+      if (!user) {
+        return c.json({ error: 'User not authenticated' }, 401);
+      }
+      const userId = user.id;
 
       // 检查书签是否存在
       const bookmark = await db
@@ -345,6 +362,7 @@ app.delete(
  */
 app.post(
   '/batch-generate',
+  authMiddleware(),
   zValidator(
     'json',
     z.object({
@@ -359,8 +377,12 @@ app.post(
       const { bookmarkIds, summaryLength, provider, force } =
         c.req.valid('json');
 
-      // TODO: 获取用户 ID
-      const userId = 'user-id';
+      // 从认证中间件获取用户 ID
+      const user = getCurrentUser(c);
+      if (!user) {
+        return c.json({ error: 'User not authenticated' }, 401);
+      }
+      const userId = user.id;
 
       // 获取用户的书签
       const userBookmarks = await db
