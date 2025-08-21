@@ -18,6 +18,21 @@ export default defineConfig({
     ],
     setupFiles: ['./vitest.setup.ts'],
     testTimeout: 30000,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: '../../coverage',
+      exclude: [
+        'node_modules/',
+        '.next/',
+        'dist/',
+        'src/**/*.{test,spec}.{ts,tsx}',
+        'src/**/*.d.ts',
+        'vitest.setup.ts',
+        'tailwind.config.js',
+        'next.config.js',
+      ],
+    },
   },
   resolve: {
     alias: {

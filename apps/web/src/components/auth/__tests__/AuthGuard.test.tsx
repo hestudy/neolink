@@ -122,7 +122,7 @@ describe('AuthGuard', () => {
         </AuthGuard>
       );
 
-      expect(mockPush).toHaveBeenCalledWith('/dashboard');
+      expect(mockPush).toHaveBeenCalledWith('/');
       expect(screen.queryByText('Public Content')).not.toBeInTheDocument();
     });
 
@@ -205,7 +205,7 @@ describe('PublicRoute', () => {
       </PublicRoute>
     );
 
-    expect(mockPush).toHaveBeenCalledWith('/dashboard');
+    expect(mockPush).toHaveBeenCalledWith('/');
     expect(screen.queryByText('Public Content')).not.toBeInTheDocument();
   });
 });

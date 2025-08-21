@@ -9,6 +9,18 @@ export default defineConfig({
     exclude: ['node_modules', 'dist'],
     setupFiles: ['./src/test-env.ts', './src/test-setup.ts'],
     testTimeout: 30000, // 增加超时时间到30秒
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'lcov', 'html'],
+      reportsDirectory: '../../coverage',
+      exclude: [
+        'node_modules/',
+        'dist/',
+        'src/**/*.test.ts',
+        'src/**/*.d.ts',
+        'src/test-*.ts',
+      ],
+    },
   },
   resolve: {
     alias: {
